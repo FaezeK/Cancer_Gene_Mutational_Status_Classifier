@@ -21,29 +21,28 @@ start_time = timeit.default_timer()
 print('Reading input data ...')
 print('')
 # expression data
-pog_tpm = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_tpm.tsv', delimiter = '\t', header=0)
-tcga_tpm = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/hg38/tcga_rsem_gene_tpm.txt', delimiter = '\t', header=0)
-hartwig_tpm = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/hartwig/hg38/hartwig_tpm.tsv', delimiter = '\t', header=0)
+pog_tpm = pd.read_csv(snakemake.input.pog_tpm, delimiter = '\t', header=0)
+tcga_tpm = pd.read_csv(snakemake.input.tcga_tpm, delimiter = '\t', header=0)
+hartwig_tpm = pd.read_csv(snakemake.input.hartwig_tpm, delimiter = '\t', header=0)
 
 # somatic mutation data
-pog_snv = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/new_download/pog_snps_indels_short.tsv', delimiter='\t', header=0)
-tcga_snv = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/hg38/tcga_gdc_hg38_mut_fltr.txt', delimiter='\t', header=0)
-hartwig_snv = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/hartwig/hg38/mut/gatk_w_ids/hartwig_all_mut_gatk.txt', delimiter='\t', header=0, dtype = {'CHROM':str})
+pog_snv = pd.read_csv(snakemake.input.pog_snv, delimiter='\t', header=0)
+tcga_snv = pd.read_csv(snakemake.input.tcga_snv, delimiter='\t', header=0)
+hartwig_snv = pd.read_csv(snakemake.input.hartwig_snv, delimiter='\t', header=0, dtype = {'CHROM':str})
 
 # germline mutation data
-tcga_germline = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/germline_mut/PCA_pathVar_integrated_filtered_adjusted.tsv', delimiter='\t', header=0)
-pog_germline = pd.read_excel('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/germline_mut/POG500.germline_variants.final.xlsx')
+tcga_germline = pd.read_csv(snakemake.input.tcga_germline, delimiter='\t', header=0)
+pog_germline = pd.read_excel(snakemake.input.pog_germline)
 
 # copy number variation data
-tcga_cnv = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/cnv/TCGA.PANCAN.sampleMap_Gistic2_CopyNumber_Gistic2_all_data_by_genes', 
-                       delimiter = '\t', header=0)
+tcga_cnv = pd.read_csv(snakemake.input.tcga_cnv, delimiter = '\t', header=0)
 
 # structural variation data
-tcga_sv = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/sv/all_sv.txt', delimiter='\t', header=0)
+tcga_sv = pd.read_csv(snakemake.input.tcga_sv, delimiter='\t', header=0)
 
 # metadata
-tcga_t_type = pd.read_csv('/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv', delimiter='\t', header=0)
-all_genes = pd.read_csv("/projects/fkeshavarz_prj/fkeshavarz_scratch/data/all_genes.txt", delimiter='\t', header=0)
+tcga_t_type = pd.read_csv(snakemake.input.tcga_t_type, delimiter='\t', header=0)
+all_genes = pd.read_csv(snakemake.input.all_genes, delimiter='\t', header=0)
 print('Input data are read!')
 print('')
 
@@ -194,6 +193,15 @@ tcga_sv_gene_of_interest = tcga_sv_fltrd[(tcga_sv_fltrd.Site1_Hugo_Symbol==gene_
                                          (tcga_sv_fltrd.Site2_Hugo_Symbol==gene_of_interest)]
 
 print('Data has been processed . . .')
+print('')
+
+####################################################
+##### Write processed files into tmp directory #####
+####################################################
+
+tcga_tpm.to_csv(snakemake.output.tcga_expr_prcssd, sep='\t', index=False)
+
+print('Processed files were written into tmp directory!')
 print('')
 
 end_time = timeit.default_timer()
