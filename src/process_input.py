@@ -23,12 +23,10 @@ print('')
 # expression data
 pog_tpm = pd.read_csv(snakemake.input.pog_tpm, delimiter = '\t', header=0)
 tcga_tpm = pd.read_csv(snakemake.input.tcga_tpm, delimiter = '\t', header=0)
-hartwig_tpm = pd.read_csv(snakemake.input.hartwig_tpm, delimiter = '\t', header=0)
 
 # somatic mutation data
 pog_snv = pd.read_csv(snakemake.input.pog_snv, delimiter='\t', header=0)
 tcga_snv = pd.read_csv(snakemake.input.tcga_snv, delimiter='\t', header=0)
-hartwig_snv = pd.read_csv(snakemake.input.hartwig_snv, delimiter='\t', header=0, dtype = {'CHROM':str})
 
 # germline mutation data
 tcga_germline = pd.read_csv(snakemake.input.tcga_germline, delimiter='\t', header=0)
@@ -66,12 +64,10 @@ def assigne_ensembl_id_as_index(expr_df):
 tcga_tpm = tcga_tpm.rename(columns={"sample":"gene_id"})
 
 pog_tpm = assigne_ensembl_id_as_index(pog_tpm)
-hartwig_tpm = assigne_ensembl_id_as_index(hartwig_tpm)
 tcga_tpm = assigne_ensembl_id_as_index(tcga_tpm)
 
 # remove the genes that do not exist in TCGA from POG and Hartwig expression data
 pog_tpm = pog_tpm[pog_tpm.index.isin(tcga_tpm.index)]
-hartwig_tpm = hartwig_tpm[hartwig_tpm.index.isin(tcga_tpm.index)]
 
 # exclue non-primary tumours from TCGA (now there are two sets of TCGA
 # samples, one with primary tumours only and the second one with all 
@@ -125,7 +121,6 @@ tcga_snv = tcga_snv.drop_duplicates(subset=['Tumor_Sample_Barcode', 'Hugo_Symbol
 # change/create the patient id column to match across all three mutation datasets
 pog_snv = pog_snv.rename(columns={"patient.participant_project_identifier":"p_id"})
 tcga_snv['p_id'] = tcga_snv.Tumor_Sample_Barcode.str.slice(0,15)
-hartwig_snv['p_id'] = hartwig_snv.P_id.str.slice(0,12)
 
 # convert gene name column in TCGA mutation dataframe to match POG 
 tcga_snv = tcga_snv.rename(columns={'Hugo_Symbol':'gene_name'})
