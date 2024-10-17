@@ -1,4 +1,4 @@
-# Gene_Status_Classifier
+# Cancer_Gene_Mutational_Status_Classifier
 
 ## Overview
-The code in this repo can be used to classify tumour samples based on presence or absence of variations in a gene of interest. For this classification task, expression data will be used as the feature matrix and samples will be labeled as "Mutant" or "Wild-type" based on presence or absence of variation in a gene of interest. The status of a gene is labeled based on SNV/INDEL (Single Nucleotide Variations/Small Insertions and Deletions), CNV (Copy Number Variations), and SV (Structural Variations) data.
+This repository provides code for classifying tumour sample expression data based on the presence or absence of alterations in any gene of interest. In this classification task, the expression data serves as the feature matrix, and samples are labeled as either "Mutant" or "Wild-type" depending on whether the gene of interest carries any alterations. The status of a gene can be determined using a combination of SNV/INDEL (Single Nucleotide Variations/Small Insertions and Deletions), CNV (Copy Number Variations), and/or SV (Structural Variations) data.
