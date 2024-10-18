@@ -63,3 +63,11 @@ rule test_performance_SNVs_only:
         f1_to_min_maj_ratio_plot_SNVs_only = 'results/f1_to_min_maj_ratio_plot_SNVs_only.jpg'
     message: 'Test RF performance using SNVs/INDELs data only'
     script: 'test_performance_SNVs_only.py'
+
+rule make_feature_matrix_label_vector_w_additional_data:
+    input:
+        feature_matrix = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt'
+    output:
+        feature_matrix_updated = 'tmp_data/feature_matrix_updated.txt',
+        label_vector_updated = 'tmp_data/label_vector_updated.txt'
