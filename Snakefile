@@ -30,11 +30,22 @@ rule preprocess_data:
     message: 'Preprocessing datasets!'
     script: 'process_input.py'
 
+rule make_feature_matrix_label_vector:
+    input:
+        pog_tpm_prcssd = 'tmp_data/pog_tpm_prcssd.tsv',
+        tcga_tpm_prcssd = 'tmp_data/tcga_tpm_prcssd.tsv',
+        pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv',
+        tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv'
+    output:
+        feature_matrix = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt'
+    message: 'Making feature matrix and label vector for analysis!'
+    script: 'make_feature_mat_label_vec.py'
+
 rule fine_tune:
     input:
         pog_tpm_prcssd = 'tmp_data/pog_tpm_prcssd.tsv',
         tcga_tpm_prcssd = 'tmp_data/tcga_tpm_prcssd.tsv',
-        hartwig_tpm_prcssd = 'tmp_data/hartwig_tpm_prcssd.tsv',
         pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv',
         tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv'
     output:
