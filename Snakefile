@@ -44,10 +44,9 @@ rule make_feature_matrix_label_vector:
 
 rule fine_tune:
     input:
-        pog_tpm_prcssd = 'tmp_data/pog_tpm_prcssd.tsv',
-        tcga_tpm_prcssd = 'tmp_data/tcga_tpm_prcssd.tsv',
-        pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv',
-        tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv'
+        feature_matrix = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt'
     output:
-        pog_best_hyper_param = 'results/pog_best_hyper_param.txt',
-        tcga_best_hyper_param = 'results/tcga_best_hyper_param.txt'
+        best_hyper_param = 'results/best_hyper_param.txt'
+    message: 'Fine-tuning hyperparameters for classification!'
+    script: 'fine_tune.py'
