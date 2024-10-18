@@ -117,14 +117,14 @@ X, y = make_X_y_merged(tcga_tpm_impactful_mut_all_data, pog_tpm_impactful_mut_al
 ##### Write feature matrices and label vectors into tmp directory #####
 #######################################################################
 
-X_cnv.to_csv(snakemake.output.feature_matrix, sep='\t', index=False)
-y_cnv.to_csv(snakemake.output.label_vector, sep='\t', index=False)
+X_cnv.to_csv(snakemake.output.feature_matrix_cnv, sep='\t', index=False)
+y_cnv.to_csv(snakemake.output.label_vector_cnv, sep='\t', index=False)
 
-X_sv.to_csv(snakemake.output.feature_matrix, sep='\t', index=False)
-y_sv.to_csv(snakemake.output.label_vector, sep='\t', index=False)
+X_sv.to_csv(snakemake.output.feature_matrix_sv, sep='\t', index=False)
+y_sv.to_csv(snakemake.output.label_vector_sv, sep='\t', index=False)
 
-X.to_csv(snakemake.output.feature_matrix, sep='\t', index=False)
-y.to_csv(snakemake.output.label_vector, sep='\t', index=False)
+X.to_csv(snakemake.output.feature_matrix_all, sep='\t', index=False)
+y.to_csv(snakemake.output.label_vector_all, sep='\t', index=False)
 
 print('Feature matrices and label vectors are made.')
 print('')

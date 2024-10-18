@@ -77,14 +77,34 @@ rule make_feature_matrix_label_vector_w_additional_data:
         tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
         tcga_cnv_prcssd = 'tmp_data/tcga_cnv_prcssd.tsv',
         tcga_sv_prcssd = 'tmp_data/tcga_sv_prcssd.tsv',
-        
+
         pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
         pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
         pog_cnv_prcssd = 'tmp_data/pog_cnv_prcssd.tsv',
         pog_sv_prcssd = 'tmp_data/pog_sv_prcssd.tsv'
     output:
-        feature_matrix_updated = 'tmp_data/feature_matrix_updated.txt',
-        label_vector_updated = 'tmp_data/label_vector_updated.txt'
+        feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
+        label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
+        feature_matrix_sv = 'tmp_data/feature_matrix_sv.txt',
+        label_vector_sv = 'tmp_data/label_vector_sv.txt',
+        feature_matrix_all = 'tmp_data/feature_matrix_all.txt',
+        label_vector_all = 'tmp_data/label_vector_all.txt'
     message: 'Utilizing CNV and SV data when contructing feature matrix and label vector'
     script: 'make_feature_mat_label_vec_w_all_data_types.py'
+
+rule test_data_type_combinations:
+    input:
+        feature_matrix  = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt',
+        feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
+        label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
+        feature_matrix_sv = 'tmp_data/feature_matrix_sv.txt',
+        label_vector_sv = 'tmp_data/label_vector_sv.txt',
+        feature_matrix_all = 'tmp_data/feature_matrix_all.txt',
+        label_vector_all = 'tmp_data/label_vector_all.txt',
+        best_hyper_param = 'results/best_hyper_param.txt'
+    output:
+        data_types_combinations_results = 'results/data_types_combinations_results.txt'
+    message: 'Comparing the model performance on different data combinations'
+    script: 'test_data_type_combinations.py'
