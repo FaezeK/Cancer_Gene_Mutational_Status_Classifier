@@ -108,6 +108,7 @@ rf_predictions2 = clf2.predict(X_test)
 rf_pred_df2 = pd.DataFrame({'p_id':sample_ids, 'status':y_test, 'predict':rf_predictions2})
 
 print(classification_report(rf_pred_df2.status, rf_pred_df2.predict), file=f)
+f.close()
 
 print('Best hyperparameters are found and tested . . .')
 print('')
