@@ -103,6 +103,16 @@ X, y = make_X_y_merged(tcga_tpm_impactful_mut, pog_tpm_impactful_mut, tcga_tpm_w
 X.to_csv(snakemake.output.feature_matrix, sep='\t', index=False)
 y.to_csv(snakemake.output.label_vector, sep='\t', index=False)
 
+# write intermediate TCGA files into tmp dir
+tcga_tpm_impactful_mut.to_csv(snakemake.output.tcga_tpm_impactful_mut, sep='\t', index=False)
+tcga_tpm_not_impactful_mut.to_csv(snakemake.output.tcga_tpm_not_impactful_mut, sep='\t', index=False)
+tcga_tpm_wt.to_csv(snakemake.output.tcga_tpm_wt, sep='\t', index=False)
+
+# write intermediate POG files into tmp dir
+pog_tpm_impactful_mut.to_csv(snakemake.output.pog_tpm_impactful_mut, sep='\t', index=False)
+pog_tpm_not_impactful_mut.to_csv(snakemake.output.pog_tpm_not_impactful_mut, sep='\t', index=False)
+pog_tpm_wt.to_csv(snakemake.output.pog_tpm_wt, sep='\t', index=False)
+
 print('Files were written into tmp directory!')
 print('')
 

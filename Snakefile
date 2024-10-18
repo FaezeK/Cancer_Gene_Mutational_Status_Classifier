@@ -38,7 +38,13 @@ rule make_feature_matrix_label_vector:
         tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv'
     output:
         feature_matrix = 'tmp_data/feature_matrix.txt',
-        label_vector = 'tmp_data/label_vector.txt'
+        label_vector = 'tmp_data/label_vector.txt',
+        tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
+        tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
+        tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
+        pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
+        pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt',
+        pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt'
     message: 'Making feature matrix and label vector for analysis!'
     script: 'make_feature_mat_label_vec.py'
 
@@ -66,8 +72,19 @@ rule test_performance_SNVs_only:
 
 rule make_feature_matrix_label_vector_w_additional_data:
     input:
-        feature_matrix = 'tmp_data/feature_matrix.txt',
-        label_vector = 'tmp_data/label_vector.txt'
+        tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
+        tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
+        tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
+        tcga_cnv_prcssd = 'tmp_data/tcga_cnv_prcssd.tsv',
+        tcga_sv_prcssd = 'tmp_data/tcga_sv_prcssd.tsv',
+        
+        pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
+        pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt',
+        pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
+        pog_cnv_prcssd = 'tmp_data/pog_cnv_prcssd.tsv',
+        pog_sv_prcssd = 'tmp_data/pog_sv_prcssd.tsv'
     output:
         feature_matrix_updated = 'tmp_data/feature_matrix_updated.txt',
         label_vector_updated = 'tmp_data/label_vector_updated.txt'
+    message: 'Utilizing CNV and SV data when contructing feature matrix and label vector'
+    script: 'make_feature_mat_label_vec_w_all_data_types.py'
