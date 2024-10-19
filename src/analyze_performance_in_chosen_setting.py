@@ -8,8 +8,6 @@ import pandas as pd
 import timeit
 import sys
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import classification_report, confusion_matrix
 
 # variables provided at run-time
 gene_of_interest = sys.argv[1]
@@ -44,9 +42,6 @@ pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mu
 tcga_all_mut = pd.read_csv(snakemake.input.tcga_mut_prcssd, delimiter = '\t', header=0)
 pog_all_mut = pd.read_csv(snakemake.input.pog_mut_prcssd, delimiter = '\t', header=0)
 
-# read TCGA tumour types
-tcga_t_type = pd.read_csv(snakemake.input.tcga_t_type, delimiter = '\t', header=0)
-
 ######################################################################################################
 ######### Training RF with TCGA and POG samples with impactful mutations or wilt-type copies #########
 ######################################################################################################
@@ -57,7 +52,7 @@ clf = RandomForestClassifier(n_estimators=3000, max_depth=int(best_max_depth), m
                              max_samples=float(best_max_samples), min_samples_split=int(best_min_samples_split), 
                              min_samples_leaf=int(best_min_samples_leaf), n_jobs=40)
 
-if best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_ony':
+if best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_only':
     clf.fit(X, y)
 elif best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_CNV':
     clf.fit(X_cnv, y_cnv)
@@ -67,7 +62,7 @@ rand_f_scores = clf.feature_importances_
 indices = np.argsort(rand_f_scores)
 rand_f_scores_sorted = pd.Series(np.sort(rand_f_scores))
 
-if best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_ony':
+if best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_only':
     rand_forest_importance_scores_df = pd.DataFrame({'gene':pd.Series(X.columns[indices]), 'importance_score':rand_f_scores_sorted})
 elif best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_CNV':
     rand_forest_importance_scores_df = pd.DataFrame({'gene':pd.Series(X_cnv.columns[indices]), 'importance_score':rand_f_scores_sorted})
