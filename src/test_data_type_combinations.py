@@ -8,6 +8,9 @@
 import pandas as pd
 import timeit
 import sys
+from sklearn.model_selection import StratifiedKFold
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 
 # variables provided at run-time
 gene_of_interest = sys.argv[1]

@@ -108,3 +108,24 @@ rule test_data_type_combinations:
         data_types_combinations_results = 'results/data_types_combinations_results.txt'
     message: 'Comparing the model performance on different data combinations'
     script: 'test_data_type_combinations.py'
+
+rule analyze_performance_in_chosen_setting:
+    input:
+        feature_matrix = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt',
+        feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
+        label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
+        best_hyper_param = 'results/best_hyper_param.txt',
+        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
+        tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
+        pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
+        tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv',
+        pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv',
+        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv'
+    output:
+        gene_importance_scores_from_RF = 'results/gene_importance_scores_from_RF.txt'
+        pred_on_sample_w_not_impact_mut = 'results/pred_on_sample_w_not_impact_mut.txt',
+        not_impact_mut_groups_pred_n_binom_p_val = 'results/not_impact_mut_groups_pred_n_binom_p_val.txt',
+        not_impact_conseq_base_n_aa_changes = 'results/not_impact_conseq_base_n_aa_changes.txt'
+    message: 'Test RF performance using best setting'
+    script: 'analyze_performance_in_chosen_setting.py'
