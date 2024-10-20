@@ -8,6 +8,8 @@ import pandas as pd
 import timeit
 import sys
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import classification_report, confusion_matrix
 
 # variables provided at run-time
 gene_of_interest = sys.argv[1]

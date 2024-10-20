@@ -171,4 +171,40 @@ rule test_performance_on_tumour_types:
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
         best_hyper_param = 'results/best_hyper_param.txt',
-        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv'
+        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
+        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
+    output:
+        specific_t_types_results = 'results/specific_t_types_results.txt'
+    message: 'Run classification on selected tumour types from the imbalanced analysis'
+    script: 'performance_on_specific_tumour_types.py'
+
+rule test_performance_on_balanced_tumour_types:
+    input:
+        feature_matrix = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt',
+        feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
+        label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
+        best_hyper_param = 'results/best_hyper_param.txt',
+        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
+        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
+    output:
+        balanced_t_types_results = 'results/balanced_t_types_results.txt'
+    message: 'Run classification on selected tumour types from the balanced analysis'
+    script: 'performance_on_balanced_tumour_types.py'
+
+rule test_performance_on_balanced_set_of_all_tumours:
+    input:
+        feature_matrix = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt',
+        feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
+        label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
+        best_hyper_param = 'results/best_hyper_param.txt',
+        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
+        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
+    output:
+        balanced_set_of_all_tumours_results = 'results/balanced_set_of_all_tumours_results.txt'
+    message: 'Run classification on balanced set of all tumours'
+    script: 'performance_on_balanced_set_of_all_tumours.py'
