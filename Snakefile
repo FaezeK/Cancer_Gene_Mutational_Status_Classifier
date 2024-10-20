@@ -145,3 +145,30 @@ rule find_threshold_for_important_genes:
         true_vs_shuffled_importance_scores_zoomed_in2 = 'results/true_vs_shuffled_importance_scores_zoomed_in2.jpg'
     message: 'Find threshold for genes contributing the most to the classification'
     script: 'find_threshold.py'
+
+rule classify_samples_by_tumour_types:
+    input:
+        feature_matrix = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt',
+        feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
+        label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
+        best_hyper_param = 'results/best_hyper_param.txt',
+        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
+        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
+    output:
+        t_type_results = 'results/t_type_results.txt',
+        t_type_gene_importance_scores = 'results/t_type_gene_importance_scores.txt',
+        t_type_results_balanced = 'results/t_type_results_balanced.txt',
+        t_type_gene_importance_scores_balanced = 'results/t_type_gene_importance_scores_balanced.txt'
+    message: 'Run classification on each tumour type separately (for both balanced and imbalanced sets)'
+    script: 'classify_by_each_t_type.py'
+
+rule test_performance_on_tumour_types:
+    input:
+        feature_matrix = 'tmp_data/feature_matrix.txt',
+        label_vector = 'tmp_data/label_vector.txt',
+        feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
+        label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
+        best_hyper_param = 'results/best_hyper_param.txt',
+        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv'
