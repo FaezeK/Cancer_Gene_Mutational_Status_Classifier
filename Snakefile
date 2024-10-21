@@ -173,9 +173,17 @@ rule test_performance_on_tumour_types:
         best_hyper_param = 'results/best_hyper_param.txt',
         best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
         tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
-        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
+        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
+        tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
+        pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
+        tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv',
+        pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv'
     output:
-        specific_t_types_results = 'results/specific_t_types_results.txt'
+        specific_t_types_cv_results = 'results/specific_t_types_cv_results.txt',
+        gene_importance_scores_specific_tumour_types = 'results/gene_importance_scores_specific_tumour_types.txt',
+        pred_on_sample_w_not_impact_mut_specific_tumour_types = 'results/pred_on_sample_w_not_impact_mut_specific_tumour_types.txt',
+        not_impact_mut_groups_pred_n_binom_p_val = 'results/not_impact_mut_groups_pred_n_binom_p_val.txt',
+        not_impact_base_n_aa_changes = 'results/not_impact_base_n_aa_changes.txt'
     message: 'Run classification on selected tumour types from the imbalanced analysis'
     script: 'performance_on_specific_tumour_types.py'
 
