@@ -1,6 +1,6 @@
 ################################################################################################################
-## This is a script to test the performance of random forest on the balanced set of all and selected tumour 
-## types in permutations to find the best analysis settings for each gene of interest.
+## This is a script to test the performance of random forest on the balanced set of all tumour types in 
+## permutations to find the best analysis settings for each gene of interest.
 ################################################################################################################
 
 # import required libraries

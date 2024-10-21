@@ -215,7 +215,7 @@ rule assess_performance_on_balanced_set_of_selected_tumours:
     output:
         permut_balanced_results_selected_tumours = 'results/permut_balanced_results_selected_tumours.txt'
     message: 'Run classification on balanced set of tumours in permutations!'
-    script: 'assess_performance_on_balanced_set_of_all_tumours.py'
+    script: 'assess_performance_on_balanced_set_of_selected_tumours.py'
 
 rule test_performance_on_balanced_tumour_types:
     input:
