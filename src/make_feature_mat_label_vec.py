@@ -5,6 +5,7 @@
 
 # import required libraries
 import pandas as pd
+import numpy as np
 import timeit
 import sys
 
@@ -24,7 +25,7 @@ pog_tpm = pd.read_csv(snakemake.input.pog_tpm_prcssd, delimiter = '\t', header=0
 tcga_tpm = pd.read_csv(snakemake.input.tcga_tpm_prcssd, delimiter = '\t', header=0)
 
 # somatic mutation data
-pog_mut = pd.read_csv(snakemake.input.pog_mut_prcssd, delimiter='\t', header=0)
+pog_mut = pd.read_csv(snakemake.input.pog_mut_prcssd, delimiter='\t', header=0, dtype="string")
 tcga_mut = pd.read_csv(snakemake.input.tcga_mut_prcssd, delimiter='\t', header=0)
 
 print('Input data are read!')
@@ -72,6 +73,10 @@ def find_mut_groups(expr_dat, snv_dat, gene_of_interest):
 
     return tpm_impactful_mut, tpm_not_impactful_mut, tpm_wt
 
+# set the gene names as index
+tcga_tpm = tcga_tpm.set_index('genes')
+pog_tpm = pog_tpm.set_index('genes')
+
 # transpose expression matrices
 tcga_tpm_T = tcga_tpm.T
 pog_tpm_T = pog_tpm.T
@@ -81,8 +86,8 @@ tcga_tpm_T = tcga_tpm_T.sort_index(axis=1)
 pog_tpm_T = pog_tpm_T.sort_index(axis=1)
 
 # divide samples based on the mutational status of the given gene of interest
-tcga_tpm_impactful_mut, tcga_tpm_not_impactful_mut, tcga_tpm_wt = find_mut_groups(tcga_tpm_T, tcga_all_mut, gene_of_interest)
-pog_tpm_impactful_mut, pog_tpm_not_impactful_mut, pog_tpm_wt = find_mut_groups(pog_tpm_T, pog_all_mut, gene_of_interest)
+tcga_tpm_impactful_mut, tcga_tpm_not_impactful_mut, tcga_tpm_wt = find_mut_groups(tcga_tpm_T, tcga_mut, gene_of_interest)
+pog_tpm_impactful_mut, pog_tpm_not_impactful_mut, pog_tpm_wt = find_mut_groups(pog_tpm_T, pog_mut, gene_of_interest)
 
 # make_X_y_merged function creates the feature matrix and label vector using both TCGA and POG data
 def make_X_y_merged(exp_mut_df1, exp_mut_df2, exp_wt_df1, exp_wt_df2, mut_label, wt_label):
@@ -96,22 +101,25 @@ def make_X_y_merged(exp_mut_df1, exp_mut_df2, exp_wt_df1, exp_wt_df2, mut_label,
 # make expression matrix and target label for TCGA and POG samples based on SNV data only
 X, y = make_X_y_merged(tcga_tpm_impactful_mut, pog_tpm_impactful_mut, tcga_tpm_wt, pog_tpm_wt, 'mut', 'wt')
 
+# make a dataframe for label vector
+y_df = pd.DataFrame({'p_id':X.index, 'y':y})
+
 ####################################################################
 ##### Write feature matrix and label vector into tmp directory #####
 ####################################################################
 
-X.to_csv(snakemake.output.feature_matrix, sep='\t', index=False)
-y.to_csv(snakemake.output.label_vector, sep='\t', index=False)
+X.to_csv(snakemake.output.feature_matrix, sep='\t', index=True)
+y_df.to_csv(snakemake.output.label_vector, sep='\t', index=False)
 
 # write intermediate TCGA files into tmp dir
-tcga_tpm_impactful_mut.to_csv(snakemake.output.tcga_tpm_impactful_mut, sep='\t', index=False)
-tcga_tpm_not_impactful_mut.to_csv(snakemake.output.tcga_tpm_not_impactful_mut, sep='\t', index=False)
-tcga_tpm_wt.to_csv(snakemake.output.tcga_tpm_wt, sep='\t', index=False)
+tcga_tpm_impactful_mut.to_csv(snakemake.output.tcga_tpm_impactful_mut, sep='\t', index=True)
+tcga_tpm_not_impactful_mut.to_csv(snakemake.output.tcga_tpm_not_impactful_mut, sep='\t', index=True)
+tcga_tpm_wt.to_csv(snakemake.output.tcga_tpm_wt, sep='\t', index=True)
 
 # write intermediate POG files into tmp dir
-pog_tpm_impactful_mut.to_csv(snakemake.output.pog_tpm_impactful_mut, sep='\t', index=False)
-pog_tpm_not_impactful_mut.to_csv(snakemake.output.pog_tpm_not_impactful_mut, sep='\t', index=False)
-pog_tpm_wt.to_csv(snakemake.output.pog_tpm_wt, sep='\t', index=False)
+pog_tpm_impactful_mut.to_csv(snakemake.output.pog_tpm_impactful_mut, sep='\t', index=True)
+pog_tpm_not_impactful_mut.to_csv(snakemake.output.pog_tpm_not_impactful_mut, sep='\t', index=True)
+pog_tpm_wt.to_csv(snakemake.output.pog_tpm_wt, sep='\t', index=True)
 
 print('Files were written into tmp directory!')
 print('')

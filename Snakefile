@@ -30,6 +30,7 @@ rule preprocess_data:
     message: 'Preprocessing datasets!'
     script: 'process_input.py'
 
+
 rule make_feature_matrix_label_vector:
     input:
         pog_tpm_prcssd = 'tmp_data/pog_tpm_prcssd.tsv',
@@ -47,6 +48,7 @@ rule make_feature_matrix_label_vector:
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt'
     message: 'Making feature matrix and label vector for analysis!'
     script: 'make_feature_mat_label_vec.py'
+
 
 rule fine_tune:
     input:
@@ -69,6 +71,7 @@ rule test_performance_SNVs_only:
         f1_to_min_maj_ratio_plot_SNVs_only = 'results/f1_to_min_maj_ratio_plot_SNVs_only.jpg'
     message: 'Test RF performance using SNVs/INDELs data only'
     script: 'test_performance_SNVs_only.py'
+
 
 rule make_feature_matrix_label_vector_w_additional_data:
     input:
@@ -93,6 +96,7 @@ rule make_feature_matrix_label_vector_w_additional_data:
     message: 'Utilizing CNV and SV data when contructing feature matrix and label vector'
     script: 'make_feature_mat_label_vec_w_all_data_types.py'
 
+
 rule test_data_type_combinations:
     input:
         feature_matrix  = 'tmp_data/feature_matrix.txt',
@@ -108,6 +112,7 @@ rule test_data_type_combinations:
         data_types_combinations_results = 'results/data_types_combinations_results.txt'
     message: 'Comparing the model performance on different data combinations'
     script: 'test_data_type_combinations.py'
+
 
 rule analyze_performance_in_chosen_setting:
     input:
@@ -129,6 +134,7 @@ rule analyze_performance_in_chosen_setting:
     message: 'Test RF performance using best setting'
     script: 'analyze_performance_in_chosen_setting.py'
 
+
 rule find_threshold_for_important_genes:
     input:
         gene_importance_scores_from_RF = 'results/gene_importance_scores_from_RF.txt',
@@ -145,6 +151,7 @@ rule find_threshold_for_important_genes:
         true_vs_shuffled_importance_scores_zoomed_in2 = 'results/true_vs_shuffled_importance_scores_zoomed_in2.jpg'
     message: 'Find threshold for genes contributing the most to the classification'
     script: 'find_threshold.py'
+
 
 rule classify_samples_by_tumour_types:
     input:
@@ -163,6 +170,7 @@ rule classify_samples_by_tumour_types:
         t_type_gene_importance_scores_balanced = 'results/t_type_gene_importance_scores_balanced.txt'
     message: 'Run classification on each tumour type separately (for both balanced and imbalanced sets)'
     script: 'classify_by_each_t_type.py'
+
 
 rule test_performance_on_tumour_types:
     input:
@@ -187,6 +195,7 @@ rule test_performance_on_tumour_types:
     message: 'Run classification on selected tumour types from the imbalanced analysis'
     script: 'performance_on_specific_tumour_types.py'
 
+
 rule assess_performance_on_balanced_set_of_all_tumours:
     input:
         feature_matrix = 'tmp_data/feature_matrix.txt',
@@ -202,6 +211,7 @@ rule assess_performance_on_balanced_set_of_all_tumours:
     message: 'Run classification on balanced set of tumours in permutations!'
     script: 'assess_performance_on_balanced_set_of_all_tumours.py'
     
+
 rule assess_performance_on_balanced_set_of_selected_tumours:
     input:
         feature_matrix = 'tmp_data/feature_matrix.txt',
@@ -216,6 +226,7 @@ rule assess_performance_on_balanced_set_of_selected_tumours:
         permut_balanced_results_selected_tumours = 'results/permut_balanced_results_selected_tumours.txt'
     message: 'Run classification on balanced set of tumours in permutations!'
     script: 'assess_performance_on_balanced_set_of_selected_tumours.py'
+
 
 rule test_performance_on_balanced_tumour_types:
     input:

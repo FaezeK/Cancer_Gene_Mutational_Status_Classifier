@@ -70,14 +70,8 @@ tcga_tpm = assigne_ensembl_id_as_index(tcga_tpm)
 # remove the genes that do not exist in TCGA from POG expression data
 pog_tpm = pog_tpm[pog_tpm.index.isin(tcga_tpm.index)]
 
-# exclue non-primary tumours from TCGA (now there are two sets of TCGA
-# samples, one with primary tumours only and the second one with all 
-# TCGA samples including the ones from metastatic and recurrenct tumours)
-tcga_tpm_primary_only = tcga_tpm.loc[:, tcga_tpm.columns.str.slice(13,15)=='01']
-
 # convert tcga values to tpm from log2(tpm+0.001)
 tcga_tpm = (2**tcga_tpm) - 0.001
-tcga_tpm_primary_only = (2**tcga_tpm_primary_only) - 0.001
 
 #########################################
 ######### Process CNV Datasets ##########
@@ -192,13 +186,13 @@ print('')
 ##### Write processed files into tmp directory #####
 ####################################################
 
-pog_tpm.to_csv(snakemake.output.pog_tpm_prcssd, sep='\t', index=False)
-pog_cnv.to_csv(snakemake.output.pog_cnv_prcssd, sep='\t', index=False)
+pog_tpm.to_csv(snakemake.output.pog_tpm_prcssd, sep='\t', index=True)
+pog_cnv.to_csv(snakemake.output.pog_cnv_prcssd, sep='\t', index=True)
 pog_all_mut.to_csv(snakemake.output.pog_mut_prcssd, sep='\t', index=False)
 pog_sv.to_csv(snakemake.output.pog_sv_prcssd, sep='\t', index=False)
 
-tcga_tpm.to_csv(snakemake.output.tcga_tpm_prcssd, sep='\t', index=False)
-tcga_cnv.to_csv(snakemake.output.tcga_cnv_prcssd, sep='\t', index=False)
+tcga_tpm.to_csv(snakemake.output.tcga_tpm_prcssd, sep='\t', index=True)
+tcga_cnv.to_csv(snakemake.output.tcga_cnv_prcssd, sep='\t', index=True)
 tcga_all_mut.to_csv(snakemake.output.tcga_mut_prcssd, sep='\t', index=False)
 tcga_sv.to_csv(snakemake.output.tcga_sv_prcssd, sep='\t', index=False)
 
