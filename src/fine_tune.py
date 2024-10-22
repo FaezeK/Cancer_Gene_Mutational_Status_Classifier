@@ -13,9 +13,6 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import classification_report, confusion_matrix
 
-# variables provided at run-time
-gene_of_interest = sys.argv[1]
-
 # timing the run-time
 start_time = timeit.default_timer()
 
