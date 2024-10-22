@@ -6,10 +6,9 @@
 # import required libraries
 import pandas as pd
 import timeit
-import sys
 
 # variables provided at run-time
-gene_of_interest = sys.argv[1]
+gene_of_interest = snakemake.params.gene_name
 
 # timing the run-time
 start_time = timeit.default_timer()
@@ -30,8 +29,8 @@ pog_tpm_wt = pd.read_csv(snakemake.input.pog_tpm_wt, delimiter = '\t', header=0)
 pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut, delimiter = '\t', header=0)
 
 # read copy number data
-tcga_cnv_prcssd = pd.read_csv(snakemake.input.tcga_cnv_prcssd, delimiter = '\t', header=0)
-pog_cnv_prcssd = pd.read_csv(snakemake.input.pog_cnv_prcssd, delimiter = '\t', header=0)
+tcga_cnv_prcssd = pd.read_csv(snakemake.input.tcga_cnv_prcssd, delimiter = '\t', header=0, index_col=0)
+pog_cnv_prcssd = pd.read_csv(snakemake.input.pog_cnv_prcssd, delimiter = '\t', header=0, index_col=0)
 
 # read structral variataion data
 tcga_sv_prcssd = pd.read_csv(snakemake.input.tcga_sv_prcssd, delimiter='\t', header=0)
@@ -82,10 +81,10 @@ def make_X_y_merged(exp_mut_df1, exp_mut_df2, exp_wt_df1, exp_wt_df2, mut_label,
 
 ################################################################
 ### utilize CNV data and update feature matrix and label vector
-tcga_tpm_impactful_mut_w_cnv, tcga_tpm_wt_w_cnv, tcga_tpm_not_impactful_mut_w_cnv = move_smpls_based_on_cnv(tcga_cnv, 
+tcga_tpm_impactful_mut_w_cnv, tcga_tpm_wt_w_cnv, tcga_tpm_not_impactful_mut_w_cnv = move_smpls_based_on_cnv(tcga_cnv_prcssd, 
                         tcga_tpm_impactful_mut, tcga_tpm_wt, tcga_tpm_not_impactful_mut, gene_of_interest)
 
-pog_tpm_impactful_mut_w_cnv, pog_tpm_wt_w_cnv, pog_tpm_not_impactful_mut_w_cnv = move_smpls_based_on_cnv(pog_cnv, 
+pog_tpm_impactful_mut_w_cnv, pog_tpm_wt_w_cnv, pog_tpm_not_impactful_mut_w_cnv = move_smpls_based_on_cnv(pog_cnv_prcssd,
                         pog_tpm_impactful_mut, pog_tpm_wt, pog_tpm_not_impactful_mut, gene_of_interest)
 
 # expression matrix and target label for TCGA and POG samples based on SNV and CNV data

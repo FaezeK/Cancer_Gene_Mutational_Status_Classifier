@@ -5,7 +5,6 @@
 
 # import required libraries
 import pandas as pd
-import numpy as np
 import timeit
 import test_performance_helper as tph
 from sklearn.ensemble import RandomForestClassifier
@@ -62,11 +61,7 @@ clf = RandomForestClassifier(n_estimators=3000, max_depth=best_max_depth, max_fe
                              min_samples_leaf=best_min_samples_leaf, n_jobs=40)
 
 # random forest performance on tcga and pog
-all_pred_df = pd.DataFrame({'p_id':['a'], 'status':['mut_wt'], 'predict':['mut_wt']})
-all_prob = []
-true_label_prob = np.empty([0,])
-
-all_pred_df, all_prob, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X, y, all_pred_df, all_prob, true_label_prob)
+all_pred_df, all_prob, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X, y)
 
 # assess performance
 f_1 = open(snakemake.output.classification_results_SNVs_only, 'w')

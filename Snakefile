@@ -64,6 +64,7 @@ rule fine_tune:
     message: 'Fine-tuning hyperparameters for classification!'
     script: 'src/fine_tune.py'
 
+
 rule test_performance_SNVs_only:
     input:
         feature_matrix = 'tmp_data/feature_matrix.txt',
@@ -98,6 +99,7 @@ rule make_feature_matrix_label_vector_w_additional_data:
         label_vector_sv = 'tmp_data/label_vector_sv.txt',
         feature_matrix_all = 'tmp_data/feature_matrix_all.txt',
         label_vector_all = 'tmp_data/label_vector_all.txt'
+    params: gene_name = gene_of_interest
     message: 'Utilizing CNV and SV data when contructing feature matrix and label vector'
     script: 'src/make_feature_mat_label_vec_w_all_data_types.py'
 

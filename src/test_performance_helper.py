@@ -2,8 +2,16 @@
 ## This is a script to provide the methods needed to test the performance of random forest model.
 ##############################################################################################################
 
+import pandas as pd
+import numpy as np
+
 # function to perform 5-fold CV using the given the model, X and y
-def test_performance_5_fold_CV(clf, skf, X, y, all_pred_df, all_prob, true_label_prob):
+def test_performance_5_fold_CV(clf, skf, X, y):
+    
+    all_pred_df = pd.DataFrame({'p_id':['a'], 'status':['mut_wt'], 'predict':['mut_wt']})
+    all_prob = []
+    true_label_prob = np.empty([0,])
+    
     # test in 5-fold CV
     for train_index, test_index in skf.split(X, y):
 
