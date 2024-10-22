@@ -25,12 +25,15 @@ start_time = timeit.default_timer()
 print('Reading feature matrix and label vector ...')
 print('')
 
-X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0)
-y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0)
+X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0, index_col=0)
+y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0, index_col=0)
 
 #####################################
 ##### Find best hyperparameters #####
 #####################################
+
+# convert y to Series instead of DF by extracting label column
+y = pd.Series(y.y)
 
 # put 10% of data aside for final check
 X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y, test_size=0.1)
@@ -61,7 +64,7 @@ def findHyperparam(X, y):
 grid_result = findHyperparam(X_train, y_train)
 
 # extract best hyperparameter values and write them in a file
-f = open(snakemake.output.str(sys.argv[1])+'best_hyper_param.txt', 'w')
+f = open(snakemake.output.best_hyper_param, 'w')
 print('best score:', file=f)
 print(grid_result.best_score_, file=f)
 print('', file=f)
