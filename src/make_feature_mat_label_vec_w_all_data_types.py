@@ -92,10 +92,10 @@ X_cnv, y_cnv = make_X_y_merged(tcga_tpm_impactful_mut_w_cnv, pog_tpm_impactful_m
 
 ################################################################
 ### utilize SV data and update feature matrix and label vector
-tcga_tpm_impactful_mut_w_sv, tcga_tpm_wt_w_sv, tcga_tpm_not_impactful_mut_w_sv = move_smpls_based_on_sv(tcga_sv, 
+tcga_tpm_impactful_mut_w_sv, tcga_tpm_wt_w_sv, tcga_tpm_not_impactful_mut_w_sv = move_smpls_based_on_sv(tcga_sv_prcssd, 
                         tcga_tpm_impactful_mut, tcga_tpm_wt, tcga_tpm_not_impactful_mut, gene_of_interest)
 
-pog_tpm_impactful_mut_w_sv, pog_tpm_wt_w_sv, pog_tpm_not_impactful_mut_w_sv = move_smpls_based_on_sv(pog_sv, 
+pog_tpm_impactful_mut_w_sv, pog_tpm_wt_w_sv, pog_tpm_not_impactful_mut_w_sv = move_smpls_based_on_sv(pog_sv_prcssd, 
                         pog_tpm_impactful_mut, pog_tpm_wt, pog_tpm_not_impactful_mut, gene_of_interest)
 
 # expression matrix and target label for TCGA and POG samples based on SNV and SV data
@@ -103,10 +103,10 @@ X_sv, y_sv = make_X_y_merged(tcga_tpm_impactful_mut_w_sv, pog_tpm_impactful_mut_
 
 #######################################################################
 ### utilize CNV and SV data and update feature matrix and label vector
-tcga_tpm_impactful_mut_all_data, tcga_tpm_wt_all_data, tcga_tpm_not_impactful_mut_all_data = move_smpls_based_on_sv(tcga_sv, 
+tcga_tpm_impactful_mut_all_data, tcga_tpm_wt_all_data, tcga_tpm_not_impactful_mut_all_data = move_smpls_based_on_sv(tcga_sv_prcssd, 
                         tcga_tpm_impactful_mut_w_cnv, tcga_tpm_wt_w_cnv, tcga_tpm_not_impactful_mut_w_cnv, gene_of_interest)
 
-pog_tpm_impactful_mut_all_data, pog_tpm_wt_all_data, pog_tpm_not_impactful_mut_all_data = move_smpls_based_on_sv(pog_sv, 
+pog_tpm_impactful_mut_all_data, pog_tpm_wt_all_data, pog_tpm_not_impactful_mut_all_data = move_smpls_based_on_sv(pog_sv_prcssd, 
                         pog_tpm_impactful_mut_w_cnv, pog_tpm_wt_w_cnv, pog_tpm_not_impactful_mut_w_cnv, gene_of_interest)
 
 # expression matrix and target label for TCGA and POG samples based on SNV and SV data
