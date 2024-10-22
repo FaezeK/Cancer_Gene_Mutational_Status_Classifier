@@ -5,6 +5,7 @@
 
 # import required libraries
 import pandas as pd
+import numpy as np
 import timeit
 import test_performance_helper as tph
 from sklearn.ensemble import RandomForestClassifier
@@ -21,8 +22,8 @@ print('Reading input files ...')
 print('')
 
 # read feature matrix and label vector
-X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0)
-y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0)
+X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0, index_col=0)
+y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0, index_col=0)
 
 # read the file with best hyperparameters
 best_hp = pd.read_csv(snakemake.input.best_hyper_param, delimiter = '\t', header=0)
@@ -35,22 +36,37 @@ tcga_t_type = pd.read_csv(snakemake.input.tcga_t_type, delimiter = '\t', header=
 #######################################################################################
 print('Extracting best hyperparameters ...')
 print('')
-best_max_depth = best_hp.max_depth[0]
-best_max_features = best_hp.max_features[0]
-best_max_samples = best_hp.max_samples[0]
-best_min_samples_split = best_hp.min_samples_split[0]
-best_min_samples_leaf = best_hp.min_samples_leaf[0]
+hps = best_hp.iloc[2,][0].split(',')
+
+for i in range(len(hps)):
+    if 'max_depth' in hps[i]:
+        best_max_depth = int(hps[i].split(':')[1])
+    elif 'max_features' in hps[i]:
+        best_max_features = float(hps[i].split(':')[1])
+    elif 'max_samples' in hps[i]:
+        best_max_samples = float(hps[i].split(':')[1])
+    elif 'min_samples_leaf' in hps[i]:
+        best_min_samples_leaf = int(hps[i].split(':')[1])
+    elif 'min_samples_split' in hps[i]:
+        best_min_samples_split = int(hps[i].split(':')[1])
+
+# convert label dataframe to vector of just labels
+y = y.y
 
 print('Performing 5-fold CV ...')
 print('')
 skf = StratifiedKFold(n_splits=5, shuffle=True)
 
-clf = RandomForestClassifier(n_estimators=3000, max_depth=int(best_max_depth), max_features=float(best_max_features), 
-                             max_samples=float(best_max_samples), min_samples_split=int(best_min_samples_split), 
-                             min_samples_leaf=int(best_min_samples_leaf), n_jobs=40)
+clf = RandomForestClassifier(n_estimators=3000, max_depth=best_max_depth, max_features=best_max_features, 
+                             max_samples=best_max_samples, min_samples_split=best_min_samples_split, 
+                             min_samples_leaf=best_min_samples_leaf, n_jobs=40)
 
 # random forest performance on tcga and pog
-all_pred_df, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X, y)
+all_pred_df = pd.DataFrame({'p_id':['a'], 'status':['mut_wt'], 'predict':['mut_wt']})
+all_prob = []
+true_label_prob = np.empty([0,])
+
+all_pred_df, all_prob, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X, y, all_pred_df, all_prob, true_label_prob)
 
 # assess performance
 f_1 = open(snakemake.output.classification_results_SNVs_only, 'w')

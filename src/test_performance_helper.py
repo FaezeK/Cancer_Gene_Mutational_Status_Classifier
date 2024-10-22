@@ -2,15 +2,8 @@
 ## This is a script to provide the methods needed to test the performance of random forest model.
 ##############################################################################################################
 
-# methods
-
 # function to perform 5-fold CV using the given the model, X and y
-def test_performance_5_fold_CV(clf, skf, X, y):
-
-    all_pred_df = pd.DataFrame({'p_id':['a'], 'status':['mut_wt'], 'predict':['mut_wt']})
-    all_prob = []
-    true_label_prob = np.empty([0,])
-
+def test_performance_5_fold_CV(clf, skf, X, y, all_pred_df, all_prob, true_label_prob):
     # test in 5-fold CV
     for train_index, test_index in skf.split(X, y):
 
@@ -41,7 +34,7 @@ def test_performance_5_fold_CV(clf, skf, X, y):
     
     all_pred_df = all_pred_df[all_pred_df.p_id != 'a']
     
-    return all_pred_df, true_label_prob
+    return all_pred_df, all_prob, true_label_prob
 
 # function to make AUROC graph
 def generate_auroc_curve(tru_stat, tru_lab_prob, pos):
