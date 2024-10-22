@@ -6,13 +6,10 @@
 # import required libraries
 import pandas as pd
 import timeit
-import sys
+import test_performance_helper as tph
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import classification_report, confusion_matrix
-
-# variables provided at run-time
-gene_of_interest = sys.argv[1]
 
 # timing the run-time
 start_time = timeit.default_timer()
@@ -53,42 +50,10 @@ clf = RandomForestClassifier(n_estimators=3000, max_depth=int(best_max_depth), m
                              min_samples_leaf=int(best_min_samples_leaf), n_jobs=40)
 
 # random forest performance on tcga and pog
-all_pred_df = pd.DataFrame({'p_id':['a'], 'status':['mut_wt'], 'predict':['mut_wt']})
-all_prob = []
-true_label_prob = np.empty([0,])
-
-# test in 5-fold CV
-for train_index, test_index in skf.split(X, y):
-
-    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
-    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
-
-    # train on 80% of data
-    clf.fit(X_train, y_train)
-
-    # test on 20% of data
-    sample_ids = X_test.index.values
-
-    rf_predictions = clf.predict(X_test)
-    rf_pred_df = pd.DataFrame({'p_id':sample_ids, 'status':y_test, 'predict':rf_predictions})
-    all_pred_df = pd.concat([all_pred_df, rf_pred_df], axis=0)
-
-    # extract prediction probabilities
-    tcga_pog_prob = clf.predict_proba(X_test)
-    for i in tcga_pog_prob:
-        rf_prob=max(i)
-        all_prob.append(rf_prob)
-    
-    if clf.classes_[0]=="wt":
-        true_prob = tcga_pog_prob[:,0]
-    else:
-        true_prob = tcga_pog_prob[:, 1]
-    true_label_prob = np.concatenate((true_label_prob, true_prob), axis=0)
-    
-all_pred_df = all_pred_df[all_pred_df.p_id != 'a']
+all_pred_df, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X, y)
 
 # assess performance
-f_1 = open(snakemake.output.str(gene_of_interest)+'classification_results_SNVs_only.txt', 'w')
+f_1 = open(snakemake.output.classification_results_SNVs_only, 'w')
 
 print(confusion_matrix(all_pred_df.status, all_pred_df.predict, labels=['mut','wt']), file=f_1)
 print(classification_report(all_pred_df.status, all_pred_df.predict), file=f_1)
@@ -102,33 +67,17 @@ print(both_auroc, file=f_1)
 
 f_1.close()
 
-# function to make AUROC graph
-def generate_auroc_curve(tru_stat, tru_lab_prob, pos):
-    data_fpr, data_tpr, data_thresholds = sklearn.metrics.roc_curve(tru_stat, tru_lab_prob, pos_label="wt")
-    data_fpr_tpr = pd.DataFrame({'fpr':data_fpr, 'tpr':data_tpr})
-    sns.lineplot(data=data_fpr_tpr, x='fpr', y='tpr', ax=pos)
-    pos.set(xlabel='False Positive Rate', ylabel='True Positive Rate')
-    pos.plot([0, 1], [0, 1], color='black', ls='--')
-
-# function to make AUPRC graph
-def generate_auprc_curve(tru_stat, tru_lab_prob, pos):
-    data_prcsn, data_rcll, data_thrshlds = sklearn.metrics.precision_recall_curve(tru_stat, tru_lab_prob, pos_label="wt")
-    data_prcsn_rcll = pd.DataFrame({'prcsn':data_prcsn, 'rcll':data_rcll})
-    sns.lineplot(data=data_prcsn_rcll, x='rcll', y='prcsn', ax=pos)
-    pos.set(xlabel='Recall', ylabel='Precision')
-    pos.plot([0, 1], [1, 0], color='black', ls='--')
-
 # make auroc and auprc graphs
 fig, axes =plt.subplots(1, 2, figsize=(8, 4), dpi=300)
 sns.set_theme()
 fnt_size = 18
-generate_auroc_curve(all_pred_df.status, true_label_prob, axes[0])
-generate_auprc_curve(all_pred_df.status, true_label_prob, axes[1])
+tph.generate_auroc_curve(all_pred_df.status, true_label_prob, axes[0])
+tph.generate_auprc_curve(all_pred_df.status, true_label_prob, axes[1])
 
 axes[0].text(0.20, 0.60, 'AUROC='+str(round(both_auroc, 2)))
 axes[1].text(0.50, 0.60, 'AUPRC='+str(round(both_auprc, 2)))
 
-fig.savefig(snakemake.output.str(gene_of_interest)+'auroc_auprc_SNVs_only.jpg',format='jpeg',dpi=300,bbox_inches='tight')
+fig.savefig(snakemake.output.auroc_auprc_SNVs_only,format='jpeg',dpi=300,bbox_inches='tight')
 
 #######################################################
 ### Make the graph of f1 score vs tumour types for TCGA
@@ -200,7 +149,7 @@ for t in range(tcga_cancer_types_measures.shape[0]):
 plt.legend(bbox_to_anchor=(1, 1.02))
 f1_to_ratio_fig.set(xlabel='The Ratio of Minor to Major Class Size', ylabel='F1 Score')
 
-fig.savefig(snakemake.output.str(gene_of_interest)+'f1_to_min_maj_ratio_plot_SNVs_only.jpg',format='jpeg',dpi=400,bbox_inches='tight')
+fig.savefig(snakemake.output.f1_to_min_maj_ratio_plot_SNVs_only,format='jpeg',dpi=400,bbox_inches='tight')
 
 print('Model performance is evaluated and plots are made . . .')
 print('')

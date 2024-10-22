@@ -71,9 +71,9 @@ rule test_performance_SNVs_only:
         best_hyper_param = 'results/best_hyper_param.txt',
         tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv'
     output:
-        classification_results_SNVs_only = 'results/classification_results_SNVs_only.txt',
-        auroc_auprc_SNVs_only = 'results/auroc_auprc_SNVs_only.jpg',
-        f1_to_min_maj_ratio_plot_SNVs_only = 'results/f1_to_min_maj_ratio_plot_SNVs_only.jpg'
+        classification_results_SNVs_only = 'results/'+str(gene_of_interest)+'/classification_results_SNVs_only.txt',
+        auroc_auprc_SNVs_only = 'results/'+str(gene_of_interest)+'/auroc_auprc_SNVs_only.jpg',
+        f1_to_min_maj_ratio_plot_SNVs_only = 'results/'+str(gene_of_interest)+'/f1_to_min_maj_ratio_plot_SNVs_only.jpg'
     message: 'Test RF performance using SNVs/INDELs data only'
     script: 'src/test_performance_SNVs_only.py'
 
