@@ -1,6 +1,9 @@
+gene_of_interest = 'AR'
+
+
 rule all:
     input:
-        'results/RF_better_clssfctn.jpg'
+        'tmp_data/pog_tpm_prcssd.tsv'
 
 
 rule preprocess_data:
@@ -27,6 +30,7 @@ rule preprocess_data:
         tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv',
         tcga_cnv_prcssd = 'tmp_data/tcga_cnv_prcssd.tsv',
         tcga_sv_prcssd = 'tmp_data/tcga_sv_prcssd.tsv'
+    params: gene_name = gene_of_interest
     message: 'Preprocessing datasets!'
     script: 'process_input.py'
 
@@ -46,6 +50,7 @@ rule make_feature_matrix_label_vector:
         pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
         pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt'
+    params: gene_name = gene_of_interest
     message: 'Making feature matrix and label vector for analysis!'
     script: 'make_feature_mat_label_vec.py'
 

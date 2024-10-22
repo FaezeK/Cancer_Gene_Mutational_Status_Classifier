@@ -7,10 +7,9 @@
 import pandas as pd
 import numpy as np
 import timeit
-import sys
 
 # variables provided at run-time
-gene_of_interest = sys.argv[1]
+gene_of_interest = snakemake.params.gene_name
 
 # timing the run-time
 start_time = timeit.default_timer()
