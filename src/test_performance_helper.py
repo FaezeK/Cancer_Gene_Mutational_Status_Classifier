@@ -4,6 +4,7 @@
 
 import pandas as pd
 import numpy as np
+import sklearn.metrics
 
 # function to perform 5-fold CV using the given the model, X and y
 def test_performance_5_fold_CV(clf, skf, X, y):

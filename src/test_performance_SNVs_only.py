@@ -5,7 +5,11 @@
 
 # import required libraries
 import pandas as pd
+import numpy as np
 import timeit
+import sklearn.metrics
+import seaborn as sns
+import matplotlib.pyplot as plt
 import test_performance_helper as tph
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold

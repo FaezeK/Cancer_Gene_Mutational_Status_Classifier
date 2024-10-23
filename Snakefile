@@ -116,7 +116,7 @@ rule test_data_type_combinations:
         label_vector_all = 'tmp_data/label_vector_all.txt',
         best_hyper_param = 'results/best_hyper_param.txt'
     output:
-        data_types_combinations_results = 'results/data_types_combinations_results.txt'
+        data_types_combinations_results = 'results/'+str(gene_of_interest)+'/data_types_combinations_results.txt'
     message: 'Comparing the model performance on different data combinations'
     script: 'src/test_data_type_combinations.py'
 

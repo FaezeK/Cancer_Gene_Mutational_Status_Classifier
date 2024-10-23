@@ -7,13 +7,9 @@
 # import required libraries
 import pandas as pd
 import timeit
-import sys
 from sklearn.model_selection import StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
-
-# variables provided at run-time
-gene_of_interest = sys.argv[1]
 
 # timing the run-time
 start_time = timeit.default_timer()
@@ -25,17 +21,17 @@ print('Reading input files ...')
 print('')
 
 # read feature matrix and label vector
-X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0)
-y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0)
+X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0, index_col=0)
+y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0, index_col=0)
 
-X_cnv = pd.read_csv(snakemake.input.feature_matrix_cnv, delimiter = '\t', header=0)
-y_cnv = pd.read_csv(snakemake.input.label_vector_cnv, delimiter = '\t', header=0)
+X_cnv = pd.read_csv(snakemake.input.feature_matrix_cnv, delimiter = '\t', header=0, index_col=0)
+y_cnv = pd.read_csv(snakemake.input.label_vector_cnv, delimiter = '\t', header=0, index_col=0)
 
-X_sv = pd.read_csv(snakemake.input.feature_matrix_sv, delimiter = '\t', header=0)
-y_sv = pd.read_csv(snakemake.input.label_vector_sv, delimiter = '\t', header=0)
+X_sv = pd.read_csv(snakemake.input.feature_matrix_sv, delimiter = '\t', header=0, index_col=0)
+y_sv = pd.read_csv(snakemake.input.label_vector_sv, delimiter = '\t', header=0, index_col=0)
 
-X_all = pd.read_csv(snakemake.input.feature_matrix_all, delimiter = '\t', header=0)
-y_all = pd.read_csv(snakemake.input.label_vector_all, delimiter = '\t', header=0)
+X_all = pd.read_csv(snakemake.input.feature_matrix_all, delimiter = '\t', header=0, index_col=0)
+y_all = pd.read_csv(snakemake.input.label_vector_all, delimiter = '\t', header=0, index_col=0)
 
 # read the file with best hyperparameters
 best_hp = pd.read_csv(snakemake.input.best_hyper_param, delimiter = '\t', header=0)
@@ -47,11 +43,25 @@ best_hp = pd.read_csv(snakemake.input.best_hyper_param, delimiter = '\t', header
 skf = StratifiedKFold(n_splits=5, shuffle=True)
 
 # extracting best hyperparameters
-best_max_depth = best_hp.max_depth[0]
-best_max_features = best_hp.max_features[0]
-best_max_samples = best_hp.max_samples[0]
-best_min_samples_split = best_hp.min_samples_split[0]
-best_min_samples_leaf = best_hp.min_samples_leaf[0]
+hps = best_hp.iloc[2,][0].split(',')
+
+for i in range(len(hps)):
+    if 'max_depth' in hps[i]:
+        best_max_depth = int(hps[i].split(':')[1])
+    elif 'max_features' in hps[i]:
+        best_max_features = float(hps[i].split(':')[1])
+    elif 'max_samples' in hps[i]:
+        best_max_samples = float(hps[i].split(':')[1])
+    elif 'min_samples_leaf' in hps[i]:
+        best_min_samples_leaf = int(hps[i].split(':')[1])
+    elif 'min_samples_split' in hps[i]:
+        best_min_samples_split = int(hps[i].split(':')[1])
+        
+# convert label dataframe to vector of just labels
+y = y.y
+y_cnv = y_cnv.y
+y_sv = y_sv.y
+y_all = y_all.y
 
 # function to run each analysis setting in 30 permutations and get performance metrics
 def get_avg_metrics(feat_matrix, label_vec):
@@ -107,7 +117,7 @@ print('')
 # random forest performance on SNV data only
 precision_scores_snv_only, recall_scores_snv_only, f1_scores_snv_only, accuracies_snv_only = get_avg_metrics(X, y)
 
-f_1 = open(snakemake.output.str(gene_of_interest)+'data_types_combinations_results.txt', 'w')
+f_1 = open(snakemake.output.data_types_combinations_results, 'w')
 
 print('SNVs/INDELs Only Avg. Precision:', round(np.mean(precision_scores_snv_only), ndigits=4), file=f_1)
 print('SNVs/INDELs Only Std. Precision:', round(np.std(precision_scores_snv_only), ndigits=4), file=f_1)
