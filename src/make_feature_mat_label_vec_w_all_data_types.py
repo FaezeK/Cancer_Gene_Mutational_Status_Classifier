@@ -90,6 +90,9 @@ pog_tpm_impactful_mut_w_cnv, pog_tpm_wt_w_cnv, pog_tpm_not_impactful_mut_w_cnv =
 # expression matrix and target label for TCGA and POG samples based on SNV and CNV data
 X_cnv, y_cnv = make_X_y_merged(tcga_tpm_impactful_mut_w_cnv, pog_tpm_impactful_mut_w_cnv, tcga_tpm_wt_w_cnv, pog_tpm_wt_w_cnv, 'mut', 'wt')
 
+# make a dataframe for label vector
+y_cnv_df = pd.DataFrame({'p_id':X_cnv.index, 'y':y_cnv})
+
 ################################################################
 ### utilize SV data and update feature matrix and label vector
 tcga_tpm_impactful_mut_w_sv, tcga_tpm_wt_w_sv, tcga_tpm_not_impactful_mut_w_sv = move_smpls_based_on_sv(tcga_sv_prcssd, 
@@ -100,6 +103,9 @@ pog_tpm_impactful_mut_w_sv, pog_tpm_wt_w_sv, pog_tpm_not_impactful_mut_w_sv = mo
 
 # expression matrix and target label for TCGA and POG samples based on SNV and SV data
 X_sv, y_sv = make_X_y_merged(tcga_tpm_impactful_mut_w_sv, pog_tpm_impactful_mut_w_sv, tcga_tpm_wt_w_sv, pog_tpm_wt_w_sv, 'mut', 'wt')
+
+# make a dataframe for label vector
+y_sv_df = pd.DataFrame({'p_id':X_sv.index, 'y':y_sv})
 
 #######################################################################
 ### utilize CNV and SV data and update feature matrix and label vector
@@ -112,18 +118,21 @@ pog_tpm_impactful_mut_all_data, pog_tpm_wt_all_data, pog_tpm_not_impactful_mut_a
 # expression matrix and target label for TCGA and POG samples based on SNV and SV data
 X, y = make_X_y_merged(tcga_tpm_impactful_mut_all_data, pog_tpm_impactful_mut_all_data, tcga_tpm_wt_all_data, pog_tpm_wt_all_data, 'mut', 'wt')
 
+# make a dataframe for label vector
+y_df = pd.DataFrame({'p_id':X.index, 'y':y})
+
 #######################################################################
 ##### Write feature matrices and label vectors into tmp directory #####
 #######################################################################
 
 X_cnv.to_csv(snakemake.output.feature_matrix_cnv, sep='\t', index=False)
-y_cnv.to_csv(snakemake.output.label_vector_cnv, sep='\t', index=False)
+y_cnv_df.to_csv(snakemake.output.label_vector_cnv, sep='\t', index=False)
 
 X_sv.to_csv(snakemake.output.feature_matrix_sv, sep='\t', index=False)
-y_sv.to_csv(snakemake.output.label_vector_sv, sep='\t', index=False)
+y_sv_df.to_csv(snakemake.output.label_vector_sv, sep='\t', index=False)
 
 X.to_csv(snakemake.output.feature_matrix_all, sep='\t', index=False)
-y.to_csv(snakemake.output.label_vector_all, sep='\t', index=False)
+y_df.to_csv(snakemake.output.label_vector_all, sep='\t', index=False)
 
 print('Feature matrices and label vectors are made.')
 print('')

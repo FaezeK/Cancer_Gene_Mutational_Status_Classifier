@@ -134,10 +134,11 @@ rule analyze_performance_in_chosen_setting:
         tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv',
         pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv'
     output:
-        gene_importance_scores_from_RF = 'results/gene_importance_scores_from_RF.txt',
-        pred_on_sample_w_not_impact_mut = 'results/pred_on_sample_w_not_impact_mut.txt',
-        not_impact_mut_groups_pred_n_binom_p_val = 'results/not_impact_mut_groups_pred_n_binom_p_val.txt',
-        not_impact_conseq_base_n_aa_changes = 'results/not_impact_conseq_base_n_aa_changes.txt'
+        gene_importance_scores_from_RF = 'results/'+str(gene_of_interest)+'/gene_importance_scores_from_RF.txt',
+        pred_on_sample_w_not_impact_mut = 'results/'+str(gene_of_interest)+'/pred_on_sample_w_not_impact_mut.txt',
+        not_impact_mut_groups_pred_n_binom_p_val = 'results/'+str(gene_of_interest)+'/not_impact_mut_groups_pred_n_binom_p_val.txt',
+        not_impact_conseq_base_n_aa_changes = 'results/'+str(gene_of_interest)+'/not_impact_conseq_base_n_aa_changes.txt'
+    params: gene_name = gene_of_interest
     message: 'Test RF performance using best setting'
     script: 'src/analyze_performance_in_chosen_setting.py'
 

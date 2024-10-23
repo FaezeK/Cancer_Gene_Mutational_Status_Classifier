@@ -6,6 +6,7 @@
 
 # import required libraries
 import pandas as pd
+import numpy as np
 import timeit
 from sklearn.model_selection import StratifiedKFold
 from sklearn.ensemble import RandomForestClassifier
@@ -56,7 +57,7 @@ for i in range(len(hps)):
         best_min_samples_leaf = int(hps[i].split(':')[1])
     elif 'min_samples_split' in hps[i]:
         best_min_samples_split = int(hps[i].split(':')[1])
-        
+
 # convert label dataframe to vector of just labels
 y = y.y
 y_cnv = y_cnv.y
