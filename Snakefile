@@ -192,7 +192,7 @@ rule test_performance_on_tumour_types:
         label_vector = 'tmp_data/label_vector.txt',
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
-        best_hyper_param = 'results/best_hyper_param.txt',
+        best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
         best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
         tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
         pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
@@ -201,11 +201,12 @@ rule test_performance_on_tumour_types:
         tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv',
         pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv'
     output:
-        specific_t_types_cv_results = 'results/specific_t_types_cv_results.txt',
-        gene_importance_scores_specific_tumour_types = 'results/gene_importance_scores_specific_tumour_types.txt',
-        pred_on_sample_w_not_impact_mut_specific_tumour_types = 'results/pred_on_sample_w_not_impact_mut_specific_tumour_types.txt',
-        not_impact_mut_groups_pred_n_binom_p_val = 'results/not_impact_mut_groups_pred_n_binom_p_val.txt',
-        not_impact_base_n_aa_changes = 'results/not_impact_base_n_aa_changes.txt'
+        specific_t_types_cv_results = 'results/'+str(gene_of_interest)+'/specific_t_types_cv_results.txt',
+        gene_importance_scores_specific_tumour_types = 'results/'+str(gene_of_interest)+'/gene_importance_scores_specific_tumour_types.txt',
+        pred_on_sample_w_not_impact_mut_specific_tumour_types = 'results/'+str(gene_of_interest)+'/pred_on_sample_w_not_impact_mut_specific_tumour_types.txt',
+        not_impact_mut_groups_pred_n_binom_p_val = 'results/'+str(gene_of_interest)+'/not_impact_mut_groups_pred_n_binom_p_val.txt',
+        not_impact_base_n_aa_changes = 'results/'+str(gene_of_interest)+'/not_impact_base_n_aa_changes.txt'
+    params: gene_name = gene_of_interest
     message: 'Run classification on selected tumour types from the imbalanced analysis'
     script: 'src/performance_on_specific_tumour_types.py'
 
@@ -222,6 +223,7 @@ rule assess_performance_on_balanced_set_of_all_tumours:
         pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
     output:
         permut_balanced_results_all_tumours = 'results/permut_balanced_results_all_tumours.txt'
+    params: gene_name = gene_of_interest
     message: 'Run classification on balanced set of tumours in permutations!'
     script: 'src/assess_performance_on_balanced_set_of_all_tumours.py'
     

@@ -6,11 +6,13 @@
 # import required libraries
 import pandas as pd
 import timeit
-import sys
+import test_performance_helper as tph
+from scipy import stats
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold
 
 # variables provided at run-time
-gene_of_interest = sys.argv[1]
+gene_of_interest = snakemake.params.gene_name
 
 # timing the run-time
 start_time = timeit.default_timer()
@@ -22,11 +24,11 @@ print('Reading input files ...')
 print('')
 
 # read feature matrix and label vector
-X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0)
-y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0)
+X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0, index_col=0)
+y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0, index_col=0)
 
-X_cnv = pd.read_csv(snakemake.input.feature_matrix_cnv, delimiter = '\t', header=0)
-y_cnv = pd.read_csv(snakemake.input.label_vector_cnv, delimiter = '\t', header=0)
+X_cnv = pd.read_csv(snakemake.input.feature_matrix_cnv, delimiter = '\t', header=0, index_col=0)
+y_cnv = pd.read_csv(snakemake.input.label_vector_cnv, delimiter = '\t', header=0, index_col=0)
 
 # read the file with best hyperparameters
 best_hp = pd.read_csv(snakemake.input.best_hyper_param, delimiter = '\t', header=0)
@@ -114,15 +116,12 @@ spcfc_t_types = all_t_type[all_t_type.tumour_type_abbv.isin(tumour_type_dict[gen
 spcfc_p_ids = spcfc_t_types[spcfc_t_types.tumour_type_abbv.isin(tumour_type_dict[gene_of_interest])].p_id
 
 # filter X and y based on above ids
-if best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_only':
+if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
     X_new = X.loc[(X.index.isin(spcfc_p_ids)==True),]
-    y_df = pd.DataFrame({'p_id':X.index,'y':y})
-elif best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_CNV':
+    y_new = y.loc[(y.index.isin(spcfc_p_ids)==True),]
+elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
     X_new = X_cnv.loc[(X_cnv.index.isin(spcfc_p_ids)==True),]
-    y_df = pd.DataFrame({'p_id':X_cnv.index,'y':y})
-
-y_new = y_df.loc[(y_df.p_id.isin(spcfc_p_ids)),]
-y_new = y_new.y
+    y_new = y_cnv.loc[(y_cnv.index.isin(spcfc_p_ids)==True),]
 
 #######################################################################################
 ######### Performing 5-fold CV to get predictions on all TCGA and POG samples #########
@@ -130,48 +129,33 @@ y_new = y_new.y
 print('Performing 5-fold CV on TCGA and POG samples from selected tumour types ...')
 print('')
 
+# extracting best hyperparameters
+hps = best_hp.iloc[2,][0].split(',')
+
+for i in range(len(hps)):
+    if 'max_depth' in hps[i]:
+        best_max_depth = int(hps[i].split(':')[1])
+    elif 'max_features' in hps[i]:
+        best_max_features = float(hps[i].split(':')[1])
+    elif 'max_samples' in hps[i]:
+        best_max_samples = float(hps[i].split(':')[1])
+    elif 'min_samples_leaf' in hps[i]:
+        best_min_samples_leaf = int(hps[i].split(':')[1])
+    elif 'min_samples_split' in hps[i]:
+        best_min_samples_split = int(hps[i].split(':')[1])
+
+clf = RandomForestClassifier(n_estimators=3000, max_depth=best_max_depth, max_features=best_max_features, 
+                             max_samples=best_max_samples, min_samples_split=best_min_samples_split, 
+                             min_samples_leaf=best_min_samples_leaf, n_jobs=40)
+
 skf = StratifiedKFold(n_splits=5, shuffle=True)
 
-clf = RandomForestClassifier(n_estimators=3000, max_depth=int(best_max_depth), max_features=float(best_max_features), 
-                             max_samples=float(best_max_samples), min_samples_split=int(best_min_samples_split), 
-                             min_samples_leaf=int(best_min_samples_leaf), n_jobs=40)
-
 # random forest performance on tcga and pog
-all_pred_df = pd.DataFrame({'p_id':['a'], 'status':['mut_wt'], 'predict':['mut_wt']})
-all_prob = []
-true_label_prob = np.empty([0,])
-
-for train_index, test_index in skf.split(X_new, y_new):
-
-    y_train, y_test = y_new.iloc[train_index], y_new.iloc[test_index]
-    X_train, X_test = X_new.iloc[train_index], X_new.iloc[test_index]
-
-    # train model on 80% of samples from selected tumour types
-    clf.fit(X_train, y_train)
-
-    sample_ids = X_test.index.values
-
-    # test the model on the remaining 20% of samples
-    rf_predictions = clf.predict(X_test)
-    rf_pred_df = pd.DataFrame({'p_id':sample_ids, 'status':y_test, 'predict':rf_predictions})
-    all_pred_df = pd.concat([all_pred_df, rf_pred_df], axis=0)
-
-    # extract prediction probabilities
-    tcga_pog_prob = clf.predict_proba(X_test)
-    for i in tcga_pog_prob:
-        rf_prob=max(i)
-        all_prob.append(rf_prob)
-    
-    if clf.classes_[0]=="wt":
-        true_prob = tcga_pog_prob[:,0]
-    else:
-        true_prob = tcga_pog_prob[:, 1]
-    true_label_prob = np.concatenate((true_label_prob, true_prob), axis=0)
-    
-all_pred_df = all_pred_df[all_pred_df.p_id != 'a']
+y_new = y_new.y
+all_pred_df, all_prob, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X_new, y_new)
 
 # assess performance
-f_1 = open('rf_results/'+str(gene_of_interest)+'/cv_tcga_pog_specific_tumour_types_cv_results.txt', 'w')
+f_1 = open(snakemake.output.specific_t_types_cv_results, 'w')
 
 print(confusion_matrix(all_pred_df.status, all_pred_df.predict, labels=['mut','wt']), file=f_1)
 print(classification_report(all_pred_df.status, all_pred_df.predict), file=f_1)
@@ -199,7 +183,7 @@ indices = np.argsort(rand_f_scores)
 rand_f_scores_sorted = pd.Series(np.sort(rand_f_scores))
 rand_forest_importance_scores_true_df = pd.DataFrame({'gene':pd.Series(X_new.columns[indices]), 'importance_score':rand_f_scores_sorted})
 rand_forest_importance_scores_true_df = rand_forest_importance_scores_true_df.sort_values(by='importance_score', ascending=False)
-rand_forest_importance_scores_true_df.to_csv(snakemake.output.str(gene_of_interest)+'_gene_importance_scores_specific_tumour_types.txt', sep='\t', index=False)
+rand_forest_importance_scores_true_df.to_csv(snakemake.output.gene_importance_scores_specific_tumour_types, sep='\t', index=False)
 
 ###################################################################
 ######### Testing on samples with not-impactful mutations #########
@@ -236,7 +220,7 @@ if X_not_impact.shape[0] != 0:
 
     not_impact_preds_w_conseq_df = not_impact_preds_specific_tumour_types_df.merge(all_not_impact_mut, how='inner', on='p_id')
 
-    not_impact_preds_w_conseq_df.to_csv(snakemake.output.str(gene_of_interest)+'_pred_on_sample_w_not_impact_mut_specific_tumour_types.txt', sep='\t', index=False)
+    not_impact_preds_w_conseq_df.to_csv(snakemake.output.pred_on_sample_w_not_impact_mut_specific_tumour_types, sep='\t', index=False)
 
     # extract the number of samples predicted as mutant or wt per consequence
     val_cnts = not_impact_preds_w_conseq_df[['consequence','pred']].value_counts()
@@ -275,7 +259,7 @@ if X_not_impact.shape[0] != 0:
     
     val_cnts_df['p_val'] = p_val_col
 
-    val_cnts_df.to_csv(snakemake.output.str(gene_of_interest)+'_not_impact_mut_groups_pred_n_binom_p_val.txt', sep='\t', index=False)
+    val_cnts_df.to_csv(snakemake.output.not_impact_mut_groups_pred_n_binom_p_val, sep='\t', index=False)
 
     # based on above table find the mutation types that led to mutant prediction
     for conseq in val_cnts_df.conseq.unique():
@@ -288,9 +272,10 @@ if X_not_impact.shape[0] != 0:
             if not_impact_predicted_as_mut.shape[0] != 0:
                 val_cnt_not_impact = not_impact_predicted_as_mut[['amino_acid_change','base_change']].value_counts()
                 val_cnt_not_impact_df = pd.DataFrame({'amino_acid_change':val_cnt_not_impact.index.get_level_values(0), 
-                                            'base_change':val_cnt_not_impact.index.get_level_values(1), 'cnt':val_cnt_not_impact})
+                                            'base_change':val_cnt_not_impact.index.get_level_values(1), 'cnt':val_cnt_not_impact,
+                                            'conseq':conseq})
                 val_cnt_not_impact_df = val_cnt_not_impact_df.reset_index(drop=True)
-                val_cnt_not_impact_df.to_csv(snakemake.output.str(gene_of_interest)+'_not_impact_'+str(conseq)+'_base_n_aa_changes.txt', sep='\t', index=False)
+                val_cnt_not_impact_df.to_csv(snakemake.output.not_impact_base_n_aa_changes, sep='\t', index=False)
 
 print('Classification is performed on imbalanced set of selected tumour types.')
 print('')
