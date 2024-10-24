@@ -234,12 +234,17 @@ rule assess_performance_on_balanced_set_of_selected_tumours:
         label_vector = 'tmp_data/label_vector.txt',
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
-        best_hyper_param = 'results/best_hyper_param.txt',
+        best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
         best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
         tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
-        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
+        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
+        tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
+        tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
+        pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
+        pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt'
     output:
-        permut_balanced_results_selected_tumours = 'results/permut_balanced_results_selected_tumours.txt'
+        permut_balanced_results_selected_tumours = 'results/'+str(gene_of_interest)+'/permut_balanced_results_selected_tumours.txt'
+    params: gene_name = gene_of_interest
     message: 'Run classification on balanced set of tumours in permutations!'
     script: 'src/assess_performance_on_balanced_set_of_selected_tumours.py'
 
