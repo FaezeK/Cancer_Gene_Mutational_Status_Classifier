@@ -181,7 +181,7 @@ print('Training RF on SNV, CNV and SV data ...')
 print('')
 
 # random forest performance on SNV, CNV and SV data
-precision_scores_snv_cnv_sv, recall_scores_snv_cnv_sv, f1_scores_snv_cnv_sv, accuracies_snv_cnv_sv = get_avg_metrics(X_cnv_sv, y_cnv_sv)
+precision_scores_snv_cnv_sv, recall_scores_snv_cnv_sv, f1_scores_snv_cnv_sv, accuracies_snv_cnv_sv = get_avg_metrics(X_all, y_all)
 
 print('All Data Types Avg. Precision:', round(np.mean(precision_scores_snv_cnv_sv), ndigits=4), file=f_1)
 print('All Data Types Std. Precision:', round(np.std(precision_scores_snv_cnv_sv), ndigits=4), file=f_1)

@@ -168,15 +168,20 @@ rule classify_samples_by_tumour_types:
         label_vector = 'tmp_data/label_vector.txt',
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
-        best_hyper_param = 'results/best_hyper_param.txt',
+        best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
         best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
         tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
-        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
+        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
+        tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
+        tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
+        pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
+        pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt'
     output:
-        t_type_results = 'results/t_type_results.txt',
-        t_type_gene_importance_scores = 'results/t_type_gene_importance_scores.txt',
-        t_type_results_balanced = 'results/t_type_results_balanced.txt',
-        t_type_gene_importance_scores_balanced = 'results/t_type_gene_importance_scores_balanced.txt'
+        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_results.txt',
+        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_gene_importance_scores.txt',
+        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_results_balanced.txt',
+        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_gene_importance_scores_balanced.txt'
+    params: gene_name = gene_of_interest
     message: 'Run classification on each tumour type separately (for both balanced and imbalanced sets)'
     script: 'src/classify_by_each_t_type.py'
 
