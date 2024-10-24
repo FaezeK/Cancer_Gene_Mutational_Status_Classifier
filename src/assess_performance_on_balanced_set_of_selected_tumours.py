@@ -146,6 +146,9 @@ if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SN
 elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
     X_new = X_cnv[X_cnv.index.isin(all_samples_to_keep)]
     y_new = y_cnv[y_cnv.index.isin(all_samples_to_keep)]
+    
+# convert label dataframe to vector
+y_new = y_new.y
 
 #######################################################################################
 ######### Performing 5-fold CV to get predictions on all TCGA and POG samples #########
