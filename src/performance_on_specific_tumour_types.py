@@ -5,11 +5,14 @@
 
 # import required libraries
 import pandas as pd
+import numpy as np
 import timeit
 import test_performance_helper as tph
+import sklearn.metrics
 from scipy import stats
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import classification_report, confusion_matrix
 
 # variables provided at run-time
 gene_of_interest = snakemake.params.gene_name
@@ -41,8 +44,8 @@ tcga_t_type = pd.read_csv(snakemake.input.tcga_t_type, delimiter = '\t', header=
 pog_t_type = pd.read_csv(snakemake.input.pog_t_type, delimiter = '\t', header=0)
 
 # read expression data of samples with non-impactful mutations
-tcga_tpm_not_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut, delimiter = '\t', header=0)
-pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut, delimiter = '\t', header=0)
+tcga_tpm_not_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
+pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 
 # read processed mutation data
 tcga_all_mut = pd.read_csv(snakemake.input.tcga_mut_prcssd, delimiter = '\t', header=0)
