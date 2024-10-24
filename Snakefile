@@ -69,7 +69,7 @@ rule test_performance_SNVs_only:
     input:
         feature_matrix = 'tmp_data/feature_matrix.txt',
         label_vector = 'tmp_data/label_vector.txt',
-        best_hyper_param = 'results/best_hyper_param.txt',
+        best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
         tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv'
     output:
         classification_results_SNVs_only = 'results/'+str(gene_of_interest)+'/classification_results_SNVs_only.txt',
@@ -114,7 +114,7 @@ rule test_data_type_combinations:
         label_vector_sv = 'tmp_data/label_vector_sv.txt',
         feature_matrix_all = 'tmp_data/feature_matrix_all.txt',
         label_vector_all = 'tmp_data/label_vector_all.txt',
-        best_hyper_param = 'results/best_hyper_param.txt'
+        best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt'
     output:
         data_types_combinations_results = 'results/'+str(gene_of_interest)+'/data_types_combinations_results.txt'
     message: 'Comparing the model performance on different data combinations'
@@ -127,7 +127,7 @@ rule analyze_performance_in_chosen_setting:
         label_vector = 'tmp_data/label_vector.txt',
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
-        best_hyper_param = 'results/best_hyper_param.txt',
+        best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
         best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
         tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
@@ -145,18 +145,19 @@ rule analyze_performance_in_chosen_setting:
 
 rule find_threshold_for_important_genes:
     input:
-        gene_importance_scores_from_RF = 'results/gene_importance_scores_from_RF.txt',
+        gene_importance_scores_from_RF = 'results/'+str(gene_of_interest)+'/gene_importance_scores_from_RF.txt',
         feature_matrix = 'tmp_data/feature_matrix.txt',
         label_vector = 'tmp_data/label_vector.txt',
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
-        best_hyper_param = 'results/best_hyper_param.txt',
+        best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
         best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv'
     output:
-        num_important_genes = 'results/num_important_genes.txt',
-        true_vs_shuffled_importance_scores = 'results/true_vs_shuffled_importance_scores.jpg',
-        true_vs_shuffled_importance_scores_zoomed_in = 'results/true_vs_shuffled_importance_scores_zoomed_in.jpg',
-        true_vs_shuffled_importance_scores_zoomed_in2 = 'results/true_vs_shuffled_importance_scores_zoomed_in2.jpg'
+        num_important_genes = 'results/'+str(gene_of_interest)+'/num_important_genes.txt',
+        true_vs_shuffled_importance_scores = 'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores.jpg',
+        true_vs_shuffled_importance_scores_zoomed_in = 'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores_zoomed_in.jpg',
+        true_vs_shuffled_importance_scores_zoomed_in2 = 'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores_zoomed_in2.jpg'
+    params: gene_name = gene_of_interest
     message: 'Find threshold for genes contributing the most to the classification'
     script: 'src/find_threshold.py'
 

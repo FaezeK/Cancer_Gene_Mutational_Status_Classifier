@@ -5,12 +5,13 @@
 
 # import required libraries
 import pandas as pd
+import numpy as np
 import timeit
-import sys
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 
 # variables provided at run-time
-gene_of_interest = sys.argv[1]
+gene_of_interest = snakemake.params.gene_name
 
 # timing the run-time
 start_time = timeit.default_timer()
@@ -25,11 +26,11 @@ print('')
 gene_importance_scores_from_RF = pd.read_csv(snakemake.input.gene_importance_scores_from_RF, delimiter = '\t', header=0)
 
 # read feature matrix and label vector
-X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0)
-y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0)
+X = pd.read_csv(snakemake.input.feature_matrix, delimiter = '\t', header=0, index_col=0)
+y = pd.read_csv(snakemake.input.label_vector, delimiter = '\t', header=0, index_col=0)
 
-X_cnv = pd.read_csv(snakemake.input.feature_matrix_cnv, delimiter = '\t', header=0)
-y_cnv = pd.read_csv(snakemake.input.label_vector_cnv, delimiter = '\t', header=0)
+X_cnv = pd.read_csv(snakemake.input.feature_matrix_cnv, delimiter = '\t', header=0, index_col=0)
+y_cnv = pd.read_csv(snakemake.input.label_vector_cnv, delimiter = '\t', header=0, index_col=0)
 
 # read the file with best hyperparameters
 best_hp = pd.read_csv(snakemake.input.best_hyper_param, delimiter = '\t', header=0)
@@ -43,22 +44,48 @@ best_setting = pd.read_csv(snakemake.input.best_setting, delimiter = '\t', heade
 print('Finding the threshold for the number of important genes ...')
 print('')
 
+# extract top 1000 genes and add the true label to the dataframe
 rand_forest_importance_scores_true_df = gene_importance_scores_from_RF.head(n=1000)
 rand_forest_importance_scores_true_df['iter'] = 'true_lab'
 rand_forest_importance_scores_true_df['rank'] = range(1,(len(rand_forest_importance_scores_true_df.gene)+1))
 rand_forest_importance_scores_df_all = rand_forest_importance_scores_true_df
 
-if best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_only':
+# make a new feature matrix using the extracted top 1000 genes
+if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
     X_1000 = X.iloc[:,X.columns.isin(rand_forest_importance_scores_true_df.gene)]
-elif best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_CNV':
+elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
     X_1000 = X_cnv.iloc[:,X_cnv.columns.isin(rand_forest_importance_scores_true_df.gene)]
+
+# extracting best hyperparameters
+hps = best_hp.iloc[2,][0].split(',')
+
+for i in range(len(hps)):
+    if 'max_depth' in hps[i]:
+        best_max_depth = int(hps[i].split(':')[1])
+    elif 'max_features' in hps[i]:
+        best_max_features = float(hps[i].split(':')[1])
+    elif 'max_samples' in hps[i]:
+        best_max_samples = float(hps[i].split(':')[1])
+    elif 'min_samples_leaf' in hps[i]:
+        best_min_samples_leaf = int(hps[i].split(':')[1])
+    elif 'min_samples_split' in hps[i]:
+        best_min_samples_split = int(hps[i].split(':')[1])
+
+# define the model
+clf = RandomForestClassifier(n_estimators=3000, max_depth=best_max_depth, max_features=best_max_features, 
+                            max_samples=best_max_samples, min_samples_split=best_min_samples_split, 
+                            min_samples_leaf=best_min_samples_leaf, n_jobs=40)
+
+# convert label dataframe to vector of just labels
+y = y.y
+y_cnv = y_cnv.y
 
 # 100 permutations of shuffling labels to find random importance scores
 for iter in range(100):
     
-    if best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_only':
+    if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
         y_imp_feat = y.sample(frac=1)
-    elif best_setting[best_setting.gene==gene_of_interest].best_setting == 'SNV_CNV':
+    elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
         y_imp_feat = y_cnv.sample(frac=1)
     
     # train the model with top 1000 features and randomly shuffled labels
@@ -95,7 +122,7 @@ plt.legend()
 plt.fill_between(rand_frst_imp_scr_df_copy.index, rand_frst_imp_scr_df_copy['mean']+rand_frst_imp_scr_df_copy.sd, rand_frst_imp_scr_df_copy['mean']-rand_frst_imp_scr_df_copy.sd, color='mediumslateblue')
 plt.xlabel('Gene Rank', fontsize=16)
 plt.ylabel('Importance (Gini) Score', fontsize=16)
-plt.savefig(snakemake.output.str(gene_of_interest)+'true_vs_shuffled_importance_scores.jpg',format='jpeg', bbox_inches='tight', dpi=300)
+plt.savefig(snakemake.output.true_vs_shuffled_importance_scores,format='jpeg', bbox_inches='tight', dpi=300)
 plt.close()
 
 # find the threshold value
@@ -114,7 +141,7 @@ plt.plot(rand_frst_imp_feat_scr_df2_copy2.index, rand_frst_imp_feat_scr_df2_copy
 plt.plot(rand_frst_imp_feat_scr_df2_copy2.index, rand_frst_imp_feat_scr_df2_copy2['mean'], label='Mean shuffled labels', color='indigo')
 plt.legend()
 plt.fill_between(rand_frst_imp_feat_scr_df2_copy2.index, rand_frst_imp_feat_scr_df2_copy2['mean']+rand_frst_imp_feat_scr_df2_copy2.sd, rand_frst_imp_feat_scr_df2_copy2['mean']-rand_frst_imp_feat_scr_df2_copy2.sd, color='mediumslateblue')
-plt.savefig(snakemake.output.str(gene_of_interest)+'true_vs_shuffled_importance_scores_zoomed_in.jpg',format='jpeg', bbox_inches='tight', dpi=300)
+plt.savefig(snakemake.output.true_vs_shuffled_importance_scores_zoomed_in,format='jpeg', bbox_inches='tight', dpi=300)
 plt.close()
 
 # make an even more zoomed-in version of the previous graph
@@ -124,7 +151,7 @@ plt.plot(rand_frst_imp_feat_scr_df2_copy2.index, rand_frst_imp_feat_scr_df2_copy
 plt.plot(rand_frst_imp_feat_scr_df2_copy2.index, rand_frst_imp_feat_scr_df2_copy2['mean'], label='Mean shuffled labels', color='indigo')
 plt.legend()
 plt.fill_between(rand_frst_imp_feat_scr_df2_copy2.index, rand_frst_imp_feat_scr_df2_copy2['mean']+rand_frst_imp_feat_scr_df2_copy2.sd, rand_frst_imp_feat_scr_df2_copy2['mean']-rand_frst_imp_feat_scr_df2_copy2.sd, color='mediumslateblue')
-plt.savefig(snakemake.output.str(gene_of_interest)+'true_vs_shuffled_importance_scores_zoomed_in2.jpg',format='jpeg', bbox_inches='tight', dpi=300)
+plt.savefig(snakemake.output.true_vs_shuffled_importance_scores_zoomed_in2,format='jpeg', bbox_inches='tight', dpi=300)
 plt.close()
 
 print('The threshold for top genes is found and graphs are made.')

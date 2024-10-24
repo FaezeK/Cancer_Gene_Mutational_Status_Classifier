@@ -72,9 +72,9 @@ def get_avg_metrics(feat_matrix, label_vec):
     f1_scores = []
     accuracies = []
 
-    clf = RandomForestClassifier(n_estimators=3000, max_depth=int(best_max_depth), max_features=float(best_max_features), 
-                                max_samples=float(best_max_samples), min_samples_split=int(best_min_samples_split), 
-                                min_samples_leaf=int(best_min_samples_leaf), n_jobs=40)
+    clf = RandomForestClassifier(n_estimators=3000, max_depth=best_max_depth, max_features=best_max_features, 
+                                max_samples=best_max_samples, min_samples_split=best_min_samples_split, 
+                                min_samples_leaf=best_min_samples_leaf, n_jobs=40)
 
     # run 5-fold CV analysis in 30 permutations
     for i in range(30):
