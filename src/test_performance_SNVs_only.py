@@ -45,7 +45,10 @@ for i in range(len(hps)):
     if 'max_depth' in hps[i]:
         best_max_depth = int(hps[i].split(':')[1])
     elif 'max_features' in hps[i]:
-        best_max_features = float(hps[i].split(':')[1])
+        if 'sqrt' in hps[i].split(':')[1]:
+            best_max_features = hps[i].split(':')[1]
+        else:
+            best_max_features = float(hps[i].split(':')[1])
     elif 'max_samples' in hps[i]:
         best_max_samples = float(hps[i].split(':')[1])
     elif 'min_samples_leaf' in hps[i]:
