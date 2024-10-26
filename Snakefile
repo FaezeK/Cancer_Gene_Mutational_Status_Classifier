@@ -5,13 +5,13 @@ rule all:
     input:
         'results/'+str(gene_of_interest)+'/classification_results_SNVs_only.txt',
         'results/'+str(gene_of_interest)+'/data_types_combinations_results.txt',
-        'results/'+str(gene_of_interest)+'/gene_importance_scores_from_RF.txt',
-        'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores.jpg',
-        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_results.txt',
-        'results/'+str(gene_of_interest)+'/specific_t_types_cv_results.txt',
-        'results/'+str(gene_of_interest)+'/permut_balanced_results_all_tumours.txt',
-        'results/'+str(gene_of_interest)+'/permut_balanced_results_selected_tumours.txt',
-        'results/'+str(gene_of_interest)+'/balanced_t_types_cv_results.txt'
+        'results/'+str(gene_of_interest)+'/gene_importance_scores_from_RF.txt'#,
+        #'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores.jpg',
+        #'results/'+str(gene_of_interest)+'/individual_t_types/t_type_results.txt',
+        #'results/'+str(gene_of_interest)+'/specific_t_types_cv_results.txt',
+        #'results/'+str(gene_of_interest)+'/permut_balanced_results_all_tumours.txt',
+        #'results/'+str(gene_of_interest)+'/permut_balanced_results_selected_tumours.txt',
+        #'results/'+str(gene_of_interest)+'/balanced_t_types_cv_results.txt'
 
 
 rule preprocess_data:
