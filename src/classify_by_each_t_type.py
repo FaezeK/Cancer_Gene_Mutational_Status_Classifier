@@ -7,7 +7,6 @@
 import pandas as pd
 import numpy as np
 import timeit
-import sys
 import test_performance_helper as tph
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold
@@ -79,8 +78,7 @@ clf = RandomForestClassifier(n_estimators=3000, max_depth=best_max_depth, max_fe
                              max_samples=best_max_samples, min_samples_split=best_min_samples_split, 
                              min_samples_leaf=best_min_samples_leaf, n_jobs=40)
 
-# retrieve the output files passed from Snakemake so tumour types can be added to the end of file name
-output_files_placeholders = sys.argv[14:18]
+skf = StratifiedKFold(n_splits=5, shuffle=True)
 
 # extract TCGA sample ids that exist in tumour types with significant f1-score 
 all_t_type = pd.concat([tcga_t_type, pog_t_type], axis=0)
@@ -111,14 +109,11 @@ for t in t_types:
         y_new_rf = y_new.y
         
         # run 5-fold CV on the samples from each tumour type
-        skf = StratifiedKFold(n_splits=5, shuffle=True)
-        
-        # random forest performance on tcga and pog
         all_pred_df, all_prob, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X_new, y_new_rf)
         
         # assess performance
         #f_1 = open(snakemake.output.t_type_results, 'w')
-        f_1 = open(output_files_placeholders[0].replace(".txt", "_"+str(t)+".txt"), 'w')
+        f_1 = open(snakemake.output[0].replace(".txt", "_"+str(t)+".txt"), 'w')
 
         print(confusion_matrix(all_pred_df.status, all_pred_df.predict, labels=['mut','wt']), file=f_1)
         print(classification_report(all_pred_df.status, all_pred_df.predict), file=f_1)
@@ -135,7 +130,7 @@ for t in t_types:
         rand_f_scores_sorted = pd.Series(np.sort(rand_f_scores))
         rand_forest_importance_scores_true_df = pd.DataFrame({'gene':pd.Series(X_new.columns[indices]), 'importance_score':rand_f_scores_sorted})
         rand_forest_importance_scores_true_df = rand_forest_importance_scores_true_df.sort_values(by='importance_score', ascending=False)
-        rand_forest_importance_scores_true_df.to_csv(output_files_placeholders[1].replace(".txt", "_"+str(t)+".txt"), sep='\t', index=False)
+        rand_forest_importance_scores_true_df.to_csv(snakemake.output[1].replace(".txt", "_"+str(t)+".txt"), sep='\t', index=False)
         
         ##########################################################
         ### Test the performance on balanced sets of tumour types
@@ -174,7 +169,7 @@ for t in t_types:
         
             # assess performance
             #f_2 = open(snakemake.output.t_type_results_balanced, 'w')
-            f_2 = open(output_files_placeholders[2].replace(".txt", "_"+str(t)+".txt"), 'w')
+            f_2 = open(snakemake.output[2].replace(".txt", "_"+str(t)+".txt"), 'w')
             
             print(confusion_matrix(all_pred_df2.status, all_pred_df2.predict, labels=['mut','wt']), file=f_2)
             print(classification_report(all_pred_df2.status, all_pred_df2.predict), file=f_2)
@@ -191,7 +186,7 @@ for t in t_types:
             rand_f_scores_sorted2 = pd.Series(np.sort(rand_f_scores2))
             rand_forest_importance_scores_true_df2 = pd.DataFrame({'gene':pd.Series(X_new2.columns[indices2]), 'importance_score':rand_f_scores_sorted2})
             rand_forest_importance_scores_true_df2 = rand_forest_importance_scores_true_df2.sort_values(by='importance_score', ascending=False)
-            rand_forest_importance_scores_true_df2.to_csv(output_files_placeholders[3].replace(".txt", "_"+str(t)+".txt"), sep='\t', index=False)
+            rand_forest_importance_scores_true_df2.to_csv(snakemake.output[3].replace(".txt", "_"+str(t)+".txt"), sep='\t', index=False)
 
 print('Classification is performed on both balanced and imbalanced sets of each tumour type.')
 print('')

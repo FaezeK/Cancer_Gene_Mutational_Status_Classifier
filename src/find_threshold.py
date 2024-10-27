@@ -135,7 +135,8 @@ if first_position_mean_gt_true_score == 1:
     first_position_mean_gt_true_score = (true_score_compared_to_mean==True).idxmax()
 
 # record the number of top genes
-first_position_mean_gt_true_score.to_csv(snakemake.output.num_important_genes, sep='\t', index=False)
+first_position_mean_gt_true_score_df = pd.DataFrame({'num_top_genes':[first_position_mean_gt_true_score]})
+first_position_mean_gt_true_score_df.to_csv(snakemake.output.num_important_genes, sep='\t', index=False)
 
 # make a zoomed-in version of the previous graph
 rand_frst_imp_feat_scr_df2_copy2 = rand_frst_imp_scr_df_copy.iloc[first_position_mean_gt_true_score-35:first_position_mean_gt_true_score+35,:]

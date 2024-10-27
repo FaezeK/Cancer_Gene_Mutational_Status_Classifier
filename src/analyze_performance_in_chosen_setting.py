@@ -196,7 +196,7 @@ if val_cnt_not_impact_all_df.shape[0] != 0:
 else: # this can happen when either none of the p-values are significant or most samples are predicted as wild-type as expected
         # or although a significant number of samples were predicted as mutant, amino acid change and base chage are missing
         # in these cases, only a message appears in the file indicating that no categories were found
-    val_cnt_not_impact_df = pd.DataFrame({'message':'No mutations categories with the desired condition is found!'})
+    val_cnt_not_impact_df = pd.DataFrame({'message':['No mutations categories with the desired condition is found!']})
     val_cnt_not_impact_all_df = pd.concat([val_cnt_not_impact_all_df, val_cnt_not_impact_df])
     val_cnt_not_impact_all_df.to_csv(snakemake.output.not_impact_conseq_base_n_aa_changes, sep='\t', index=False)
 
