@@ -190,7 +190,7 @@ for conseq in val_cnts_df.conseq.unique():
                                         'conseq':conseq})
             val_cnt_not_impact_df = val_cnt_not_impact_df.reset_index(drop=True)
             val_cnt_not_impact_all_df = pd.concat([val_cnt_not_impact_all_df, val_cnt_not_impact_df])
-      
+  
 if val_cnt_not_impact_all_df.shape[0] != 0:
     val_cnt_not_impact_all_df.to_csv(snakemake.output.not_impact_conseq_base_n_aa_changes, sep='\t', index=False)
 else: # this can happen when either none of the p-values are significant or most samples are predicted as wild-type as expected

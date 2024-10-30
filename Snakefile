@@ -225,8 +225,8 @@ rule test_performance_on_tumour_types:
         specific_t_types_cv_results = 'results/'+str(gene_of_interest)+'/specific_t_types_cv_results.txt',
         gene_importance_scores_specific_tumour_types = 'results/'+str(gene_of_interest)+'/gene_importance_scores_specific_tumour_types.txt',
         pred_on_sample_w_not_impact_mut_specific_tumour_types = 'results/'+str(gene_of_interest)+'/pred_on_sample_w_not_impact_mut_specific_tumour_types.txt',
-        not_impact_mut_groups_pred_n_binom_p_val = 'results/'+str(gene_of_interest)+'/not_impact_mut_groups_pred_n_binom_p_val.txt',
-        not_impact_base_n_aa_changes = 'results/'+str(gene_of_interest)+'/not_impact_base_n_aa_changes.txt'
+        not_impact_mut_groups_pred_n_binom_p_val = 'results/'+str(gene_of_interest)+'/not_impact_mut_groups_pred_n_binom_p_val_specific_tumour_types.txt',
+        not_impact_base_n_aa_changes = 'results/'+str(gene_of_interest)+'/not_impact_conseq_base_n_aa_changes_specific_tumour_types.txt'
     params: gene_name = gene_of_interest
     message: 'Run classification on selected tumour types from the imbalanced analysis'
     script: 'src/performance_on_specific_tumour_types.py'

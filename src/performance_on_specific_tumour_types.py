@@ -167,11 +167,15 @@ print(confusion_matrix(all_pred_df.status, all_pred_df.predict, labels=['mut','w
 print(classification_report(all_pred_df.status, all_pred_df.predict), file=f_1)
 
 both_auprc = sklearn.metrics.average_precision_score(all_pred_df.status, true_label_prob, pos_label="wt")
-both_auroc = sklearn.metrics.roc_auc_score(all_pred_df.status, true_label_prob)
 print('AUPRC:', file=f_1)
 print(both_auprc, file=f_1)
-print('AUROC:', file=f_1)
-print(both_auroc, file=f_1)
+
+if len(all_pred_df.status.unique()) == 2:
+    both_auroc = sklearn.metrics.roc_auc_score(all_pred_df.status, true_label_prob)
+    print('AUROC:', file=f_1)
+    print(both_auroc, file=f_1)
+else:
+    print('All the labels are the same so AUROC cannot be calculated!')
 
 f_1.close()
 
@@ -268,20 +272,44 @@ if X_not_impact.shape[0] != 0:
     val_cnts_df.to_csv(snakemake.output.not_impact_mut_groups_pred_n_binom_p_val, sep='\t', index=False)
 
     # based on above table find the mutation types that led to mutant prediction
+    val_cnt_not_impact_all_df = pd.DataFrame()
+    
     for conseq in val_cnts_df.conseq.unique():
         tmp = val_cnts_df[val_cnts_df.conseq == conseq]
+        # only investigate consequences were p-value is significant and there are more mutant predictions
         if float(tmp.p_val.iloc[0]) < 0.05 and tmp[tmp.pred=='mut'].val.iloc[0] > tmp[tmp.pred=='wt'].val.iloc[0]:
             not_impact_predicted_as_mut = not_impact_preds_w_conseq_df[(not_impact_preds_w_conseq_df.consequence==conseq) & 
                                                            (not_impact_preds_w_conseq_df.pred=='mut')]
+            # remove the rows with NA amino acid or base change
             not_impact_predicted_as_mut.loc[not_impact_predicted_as_mut.amino_acid_change.isna(),'amino_acid_change'] = 'NA'
             not_impact_predicted_as_mut.loc[not_impact_predicted_as_mut.base_change.isna(),'base_change'] = 'NA'
             if not_impact_predicted_as_mut.shape[0] != 0:
+                # count the samples with different types of amino acid or base change
                 val_cnt_not_impact = not_impact_predicted_as_mut[['amino_acid_change','base_change']].value_counts()
                 val_cnt_not_impact_df = pd.DataFrame({'amino_acid_change':val_cnt_not_impact.index.get_level_values(0), 
                                             'base_change':val_cnt_not_impact.index.get_level_values(1), 'cnt':val_cnt_not_impact,
                                             'conseq':conseq})
                 val_cnt_not_impact_df = val_cnt_not_impact_df.reset_index(drop=True)
-                val_cnt_not_impact_df.to_csv(snakemake.output.not_impact_base_n_aa_changes, sep='\t', index=False)
+                val_cnt_not_impact_all_df = pd.concat([val_cnt_not_impact_all_df, val_cnt_not_impact_df])
+                
+    if val_cnt_not_impact_all_df.shape[0] != 0:
+        val_cnt_not_impact_all_df.to_csv(snakemake.output.not_impact_conseq_base_n_aa_changes, sep='\t', index=False)
+    else: # this can happen when either none of the p-values are significant or most samples are predicted as wild-type as expected
+            # or although a significant number of samples were predicted as mutant, amino acid change and base chage are missing.
+            # In these cases, only a message appears in the file indicating that no categories were found
+        val_cnt_not_impact_df = pd.DataFrame({'message':['No mutations categories with the desired condition is found!']})
+        val_cnt_not_impact_all_df = pd.concat([val_cnt_not_impact_all_df, val_cnt_not_impact_df])
+        val_cnt_not_impact_all_df.to_csv(snakemake.output.not_impact_conseq_base_n_aa_changes, sep='\t', index=False)
+else:
+    # The below files are generated as placeholders to avoid missing output error in Snakemake
+    not_impact_preds_w_conseq_df = pd.DataFrame({'message':['No samples with not-impactful mutations!']})
+    not_impact_preds_w_conseq_df.to_csv(snakemake.output.pred_on_sample_w_not_impact_mut_specific_tumour_types, sep='\t', index=False)
+    
+    val_cnts_df = pd.DataFrame({'message':['No samples with not-impactful mutations!']})
+    val_cnts_df.to_csv(snakemake.output.not_impact_mut_groups_pred_n_binom_p_val, sep='\t', index=False)
+    
+    val_cnt_not_impact_all_df = pd.DataFrame({'message':['No samples with not-impactful mutations!']})
+    val_cnt_not_impact_all_df.to_csv(snakemake.output.not_impact_conseq_base_n_aa_changes, sep='\t', index=False)
 
 print('Classification is performed on imbalanced set of selected tumour types.')
 print('')
