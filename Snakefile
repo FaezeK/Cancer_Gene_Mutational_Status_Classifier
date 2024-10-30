@@ -1,14 +1,27 @@
 gene_of_interest = 'AR'
 
+def fetch_tumour_types():
+    # Get output of classify_by_tumour_types rule
+    checkpoint_output = checkpoints.classify_samples_by_tumour_types.get()
+    output_paths = checkpoint_output.output 
+    # Extract tumour types dynamically based on file names in output paths
+    tumour_types = set(path.split("_")[-1].replace(".txt", "") for path in output_paths)
+    # Remove the file endings that are not tumour types
+    tumour_types -= set(['scores','results','balanced'])
+    # Exapand file name using found tumour types
+    return expand(
+        f"results/{gene_of_interest}/individual_t_types/t_type_results_{{tumour_type}}.txt",
+        tumour_type=tumour_types
+    )
 
 rule all:
     input:
         'results/'+str(gene_of_interest)+'/classification_results_SNVs_only.txt',
         'results/'+str(gene_of_interest)+'/data_types_combinations_results.txt',
-        'results/'+str(gene_of_interest)+'/gene_importance_scores_from_RF.txt'#,
-        #'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores.jpg',
-        #'results/'+str(gene_of_interest)+'/individual_t_types/t_type_results.txt'#,
-        #'results/'+str(gene_of_interest)+'/specific_t_types_cv_results.txt',
+        'results/'+str(gene_of_interest)+'/gene_importance_scores_from_RF.txt',
+        'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores.jpg',
+        lambda wildcards: fetch_tumour_types(),
+        'results/'+str(gene_of_interest)+'/specific_t_types_cv_results.txt'#,
         #'results/'+str(gene_of_interest)+'/permut_balanced_results_all_tumours.txt',
         #'results/'+str(gene_of_interest)+'/permut_balanced_results_selected_tumours.txt',
         #'results/'+str(gene_of_interest)+'/balanced_t_types_cv_results.txt'
@@ -170,7 +183,7 @@ rule find_threshold_for_important_genes:
     script: 'src/find_threshold.py'
 
 
-rule classify_samples_by_tumour_types:
+checkpoint classify_samples_by_tumour_types:
     input:
         feature_matrix = 'tmp_data/feature_matrix.txt',
         label_vector = 'tmp_data/label_vector.txt',
@@ -185,11 +198,10 @@ rule classify_samples_by_tumour_types:
         pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
         pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt'
     output:
-        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_results.txt',
-        # 'results/'+str(gene_of_interest)+'/individual_t_types/t_type_results_{tumour_type}.txt',
-        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_gene_importance_scores.txt',
-        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_results_balanced.txt',
-        'results/'+str(gene_of_interest)+'/individual_t_types/t_type_gene_importance_scores_balanced.txt'
+        temp('results/'+str(gene_of_interest)+'/individual_t_types/t_type_results.txt'),
+        temp('results/'+str(gene_of_interest)+'/individual_t_types/t_type_gene_importance_scores.txt'),
+        temp('results/'+str(gene_of_interest)+'/individual_t_types/t_type_results_balanced.txt'),
+        temp('results/'+str(gene_of_interest)+'/individual_t_types/t_type_gene_importance_scores_balanced.txt')
     params: gene_name = gene_of_interest
     message: 'Run classification on each tumour type separately (for both balanced and imbalanced sets)'
     script: 'src/classify_by_each_t_type.py'

@@ -55,6 +55,24 @@ pog_tpm_wt = pd.read_csv(snakemake.input.pog_tpm_wt, delimiter = '\t', header=0,
 print('Training RF ...')
 print('')
 
+# make placeholder files for snakemake rule
+# these files will be deleted after rule finishes running
+f1 = open(snakemake.output[0], 'w')
+print('Placeholder file!', file=f1)
+f1.close()
+
+f2 = open(snakemake.output[1], 'w')
+print('Placeholder file!', file=f2)
+f2.close()
+
+f3 = open(snakemake.output[2], 'w')
+print('Placeholder file!', file=f3)
+f3.close()
+
+f4 = open(snakemake.output[3], 'w')
+print('Placeholder file!', file=f4)
+f4.close()
+
 # extracting best hyperparameters
 hps = best_hp.iloc[2,][0].split(',')
 
@@ -113,7 +131,8 @@ for t in t_types:
         
         # assess performance
         #f_1 = open(snakemake.output.t_type_results, 'w')
-        f_1 = open(snakemake.output[0].replace(".txt", "_"+str(t)+".txt"), 'w')
+        #f_1 = open("t_type_results_"+str(t)+".txt", 'w')
+        f_1 = open(snakemake.output[0].split('.txt')[0]+"_"+str(t)+".txt", 'w')
 
         print(confusion_matrix(all_pred_df.status, all_pred_df.predict, labels=['mut','wt']), file=f_1)
         print(classification_report(all_pred_df.status, all_pred_df.predict), file=f_1)
@@ -130,7 +149,7 @@ for t in t_types:
         rand_f_scores_sorted = pd.Series(np.sort(rand_f_scores))
         rand_forest_importance_scores_true_df = pd.DataFrame({'gene':pd.Series(X_new.columns[indices]), 'importance_score':rand_f_scores_sorted})
         rand_forest_importance_scores_true_df = rand_forest_importance_scores_true_df.sort_values(by='importance_score', ascending=False)
-        rand_forest_importance_scores_true_df.to_csv(snakemake.output[1].replace(".txt", "_"+str(t)+".txt"), sep='\t', index=False)
+        rand_forest_importance_scores_true_df.to_csv(snakemake.output[1].split('.txt')[0]+"_"+str(t)+".txt", sep='\t', index=False)
         
         ##########################################################
         ### Test the performance on balanced sets of tumour types
@@ -169,7 +188,7 @@ for t in t_types:
         
             # assess performance
             #f_2 = open(snakemake.output.t_type_results_balanced, 'w')
-            f_2 = open(snakemake.output[2].replace(".txt", "_"+str(t)+".txt"), 'w')
+            f_2 = open(snakemake.output[2].split('.txt')[0]+"_"+str(t)+".txt", 'w')
             
             print(confusion_matrix(all_pred_df2.status, all_pred_df2.predict, labels=['mut','wt']), file=f_2)
             print(classification_report(all_pred_df2.status, all_pred_df2.predict), file=f_2)
@@ -186,7 +205,7 @@ for t in t_types:
             rand_f_scores_sorted2 = pd.Series(np.sort(rand_f_scores2))
             rand_forest_importance_scores_true_df2 = pd.DataFrame({'gene':pd.Series(X_new2.columns[indices2]), 'importance_score':rand_f_scores_sorted2})
             rand_forest_importance_scores_true_df2 = rand_forest_importance_scores_true_df2.sort_values(by='importance_score', ascending=False)
-            rand_forest_importance_scores_true_df2.to_csv(snakemake.output[3].replace(".txt", "_"+str(t)+".txt"), sep='\t', index=False)
+            rand_forest_importance_scores_true_df2.to_csv(snakemake.output[3].split('.txt')[0]+"_"+str(t)+".txt", sep='\t', index=False)
 
 print('Classification is performed on both balanced and imbalanced sets of each tumour type.')
 print('')
