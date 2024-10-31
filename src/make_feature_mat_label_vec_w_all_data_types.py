@@ -124,6 +124,18 @@ X = X.set_index('Unnamed: 0')
 # make a dataframe for label vector
 y_df = pd.DataFrame({'p_id':X.index, 'y':y})
 
+###################################################################################
+##### Write intermediate expression matrices with CNV data into tmp directory #####
+###################################################################################
+
+tcga_tpm_impactful_mut_w_cnv.to_csv(snakemake.output.tcga_tpm_impactful_mut_cnv, sep='\t', index=True)
+tcga_tpm_wt_w_cnv.to_csv(snakemake.output.tcga_tpm_wt_cnv, sep='\t', index=True)
+tcga_tpm_not_impactful_mut_w_cnv.to_csv(snakemake.output.tcga_tpm_not_impactful_mut_cnv, sep='\t', index=True)
+
+pog_tpm_impactful_mut_w_cnv.to_csv(snakemake.output.pog_tpm_impactful_mut_cnv, sep='\t', index=True)
+pog_tpm_wt_w_cnv.to_csv(snakemake.output.pog_tpm_wt_cnv, sep='\t', index=True)
+pog_tpm_not_impactful_mut_w_cnv.to_csv(snakemake.output.pog_tpm_not_impactful_mut_cnv, sep='\t', index=True)
+
 #######################################################################
 ##### Write feature matrices and label vectors into tmp directory #####
 #######################################################################

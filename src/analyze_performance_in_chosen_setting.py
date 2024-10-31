@@ -39,6 +39,10 @@ best_setting = pd.read_csv(snakemake.input.best_setting, delimiter = '\t', heade
 tcga_tpm_not_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 
+# read expression data of samples with non-impactful mutations made with both SNV and CNV data
+tcga_tpm_not_impactful_mut_cnv = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+pog_tpm_not_impactful_mut_cnv = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+
 # read processed mutation data
 tcga_all_mut = pd.read_csv(snakemake.input.tcga_mut_prcssd, delimiter = '\t', header=0)
 pog_all_mut = pd.read_csv(snakemake.input.pog_mut_prcssd, delimiter = '\t', header=0)
@@ -100,7 +104,10 @@ rand_forest_importance_scores_df.to_csv(snakemake.output.gene_importance_scores_
 print('Testing RF on samples with not-impactful mutations ...')
 print('')
 
-both_tpm_not_impactful_mut = pd.concat([tcga_tpm_not_impactful_mut, pog_tpm_not_impactful_mut], axis=0)
+if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
+    both_tpm_not_impactful_mut = pd.concat([tcga_tpm_not_impactful_mut, pog_tpm_not_impactful_mut], axis=0)
+elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+    both_tpm_not_impactful_mut = pd.concat([tcga_tpm_not_impactful_mut_cnv, pog_tpm_not_impactful_mut_cnv], axis=0)
 
 not_impact_preds = clf.predict(both_tpm_not_impactful_mut)
 not_impact_preds_df = pd.DataFrame({'p_id':both_tpm_not_impactful_mut.index, 'pred':not_impact_preds})

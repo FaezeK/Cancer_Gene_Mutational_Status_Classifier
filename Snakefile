@@ -21,10 +21,10 @@ rule all:
         'results/'+str(gene_of_interest)+'/gene_importance_scores_from_RF.txt',
         'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores.jpg',
         lambda wildcards: fetch_tumour_types(),
-        'results/'+str(gene_of_interest)+'/specific_t_types_cv_results.txt'#,
-        #'results/'+str(gene_of_interest)+'/permut_balanced_results_all_tumours.txt',
-        #'results/'+str(gene_of_interest)+'/permut_balanced_results_selected_tumours.txt',
-        #'results/'+str(gene_of_interest)+'/balanced_t_types_cv_results.txt'
+        'results/'+str(gene_of_interest)+'/specific_t_types_cv_results.txt',
+        'results/'+str(gene_of_interest)+'/permut_balanced_results_all_tumours.txt',
+        'results/'+str(gene_of_interest)+'/permut_balanced_results_selected_tumours.txt',
+        'results/'+str(gene_of_interest)+'/balanced_t_types_cv_results.txt'
 
 
 rule preprocess_data:
@@ -119,7 +119,14 @@ rule make_feature_matrix_label_vector_w_additional_data:
         feature_matrix_sv = 'tmp_data/feature_matrix_sv.txt',
         label_vector_sv = 'tmp_data/label_vector_sv.txt',
         feature_matrix_all = 'tmp_data/feature_matrix_all.txt',
-        label_vector_all = 'tmp_data/label_vector_all.txt'
+        label_vector_all = 'tmp_data/label_vector_all.txt',
+        
+        tcga_tpm_impactful_mut_cnv = 'tmp_data/tcga_tpm_impactful_mut_cnv.txt',
+        tcga_tpm_wt_cnv = 'tmp_data/tcga_tpm_wt_cnv.txt',
+        tcga_tpm_not_impactful_mut_cnv = 'tmp_data/tcga_tpm_not_impactful_mut_cnv.txt',
+        pog_tpm_impactful_mut_cnv = 'tmp_data/pog_tpm_impactful_mut_cnv.txt',
+        pog_tpm_wt_cnv = 'tmp_data/pog_tpm_wt_cnv.txt',
+        pog_tpm_not_impactful_mut_cnv = 'tmp_data/pog_tpm_not_impactful_mut_cnv.txt'
     params: gene_name = gene_of_interest
     message: 'Utilizing CNV and SV data when contructing feature matrix and label vector'
     script: 'src/make_feature_mat_label_vec_w_all_data_types.py'
@@ -152,6 +159,8 @@ rule analyze_performance_in_chosen_setting:
         best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
         tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
+        tcga_tpm_not_impactful_mut_cnv = 'tmp_data/tcga_tpm_not_impactful_mut_cnv.txt',
+        pog_tpm_not_impactful_mut_cnv = 'tmp_data/pog_tpm_not_impactful_mut_cnv.txt',
         tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv',
         pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv'
     output:
@@ -196,7 +205,11 @@ checkpoint classify_samples_by_tumour_types:
         tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
         tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
         pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
-        pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt'
+        pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt',
+        tcga_tpm_impactful_mut_cnv = 'tmp_data/tcga_tpm_impactful_mut_cnv.txt',
+        tcga_tpm_wt_cnv = 'tmp_data/tcga_tpm_wt_cnv.txt',
+        pog_tpm_impactful_mut_cnv = 'tmp_data/pog_tpm_impactful_mut_cnv.txt',
+        pog_tpm_wt_cnv = 'tmp_data/pog_tpm_wt_cnv.txt'
     output:
         temp('results/'+str(gene_of_interest)+'/individual_t_types/t_type_results.txt'),
         temp('results/'+str(gene_of_interest)+'/individual_t_types/t_type_gene_importance_scores.txt'),
@@ -219,6 +232,8 @@ rule test_performance_on_tumour_types:
         pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
         tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
+        tcga_tpm_not_impactful_mut_cnv = 'tmp_data/tcga_tpm_not_impactful_mut_cnv.txt',
+        pog_tpm_not_impactful_mut_cnv = 'tmp_data/pog_tpm_not_impactful_mut_cnv.txt',
         tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv',
         pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv'
     output:
@@ -262,7 +277,11 @@ rule assess_performance_on_balanced_set_of_selected_tumours:
         tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
         tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
         pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
-        pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt'
+        pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt',
+        tcga_tpm_impactful_mut_cnv = 'tmp_data/tcga_tpm_impactful_mut_cnv.txt',
+        tcga_tpm_wt_cnv = 'tmp_data/tcga_tpm_wt_cnv.txt',
+        pog_tpm_impactful_mut_cnv = 'tmp_data/pog_tpm_impactful_mut_cnv.txt',
+        pog_tpm_wt_cnv = 'tmp_data/pog_tpm_wt_cnv.txt'
     output:
         permut_balanced_results_selected_tumours = 'results/'+str(gene_of_interest)+'/permut_balanced_results_selected_tumours.txt'
     params: gene_name = gene_of_interest
@@ -282,10 +301,16 @@ rule test_performance_on_balanced_tumour_types:
         pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
         tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
+        tcga_tpm_not_impactful_mut_cnv = 'tmp_data/tcga_tpm_not_impactful_mut_cnv.txt',
+        pog_tpm_not_impactful_mut_cnv = 'tmp_data/pog_tpm_not_impactful_mut_cnv.txt',
         tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
         tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
         pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
         pog_tpm_wt = 'tmp_data/pog_tpm_wt.txt',
+        tcga_tpm_impactful_mut_cnv = 'tmp_data/tcga_tpm_impactful_mut_cnv.txt',
+        tcga_tpm_wt_cnv = 'tmp_data/tcga_tpm_wt_cnv.txt',
+        pog_tpm_impactful_mut_cnv = 'tmp_data/pog_tpm_impactful_mut_cnv.txt',
+        pog_tpm_wt_cnv = 'tmp_data/pog_tpm_wt_cnv.txt',
         tcga_mut_prcssd = 'tmp_data/tcga_mut_prcssd.tsv',
         pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv'
     output:

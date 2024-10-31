@@ -47,6 +47,10 @@ pog_t_type = pd.read_csv(snakemake.input.pog_t_type, delimiter = '\t', header=0)
 tcga_tpm_not_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 
+# read expression data of samples with non-impactful mutations made with both SNV and CNV data
+tcga_tpm_not_impactful_mut_cnv = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+pog_tpm_not_impactful_mut_cnv = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+
 # read processed mutation data
 tcga_all_mut = pd.read_csv(snakemake.input.tcga_mut_prcssd, delimiter = '\t', header=0)
 pog_all_mut = pd.read_csv(snakemake.input.pog_mut_prcssd, delimiter = '\t', header=0)
@@ -167,15 +171,11 @@ print(confusion_matrix(all_pred_df.status, all_pred_df.predict, labels=['mut','w
 print(classification_report(all_pred_df.status, all_pred_df.predict), file=f_1)
 
 both_auprc = sklearn.metrics.average_precision_score(all_pred_df.status, true_label_prob, pos_label="wt")
+both_auroc = sklearn.metrics.roc_auc_score(all_pred_df.status, true_label_prob)
 print('AUPRC:', file=f_1)
 print(both_auprc, file=f_1)
-
-if len(all_pred_df.status.unique()) == 2:
-    both_auroc = sklearn.metrics.roc_auc_score(all_pred_df.status, true_label_prob)
-    print('AUROC:', file=f_1)
-    print(both_auroc, file=f_1)
-else:
-    print('All the labels are the same so AUROC cannot be calculated!')
+print('AUROC:', file=f_1)
+print(both_auroc, file=f_1)
 
 f_1.close()
 
@@ -201,8 +201,23 @@ rand_forest_importance_scores_true_df.to_csv(snakemake.output.gene_importance_sc
 print('Testing RF on samples with not-impactful mutations ...')
 print('')
 
-X_not_impact_tcga = tcga_tpm_not_impactful_mut.loc[tcga_tpm_not_impactful_mut.index.isin(spcfc_p_ids)==True,]
-X_not_impact_pog = pog_tpm_not_impactful_mut.loc[pog_tpm_not_impactful_mut.index.isin(spcfc_p_ids)==True,]
+if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
+    # extract samples harboring not-impactful mutations that belong to tumour types of interest
+    X_not_impact_tcga = tcga_tpm_not_impactful_mut.loc[tcga_tpm_not_impactful_mut.index.isin(spcfc_p_ids)==True,]
+    X_not_impact_pog = pog_tpm_not_impactful_mut.loc[pog_tpm_not_impactful_mut.index.isin(spcfc_p_ids)==True,]
+    
+    # find mutation types of samples harboring not-impactful mutations that belong to tumour types of interest
+    tcga_not_impact_mut = tcga_all_mut[(tcga_all_mut.p_id.isin(tcga_tpm_not_impactful_mut.index)) & (tcga_all_mut.gene_name == gene_of_interest)]
+    pog_not_impact_mut = pog_all_mut[(pog_all_mut.p_id.isin(pog_tpm_not_impactful_mut.index)) & (pog_all_mut.gene_name == gene_of_interest)]
+
+elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+    # extract samples harboring not-impactful mutations that belong to tumour types of interest
+    X_not_impact_tcga = tcga_tpm_not_impactful_mut_cnv.loc[tcga_tpm_not_impactful_mut_cnv.index.isin(spcfc_p_ids)==True,]
+    X_not_impact_pog = pog_tpm_not_impactful_mut_cnv.loc[pog_tpm_not_impactful_mut_cnv.index.isin(spcfc_p_ids)==True,]
+    
+    # find mutation types of samples harboring not-impactful mutations that belong to tumour types of interest
+    tcga_not_impact_mut = tcga_all_mut[(tcga_all_mut.p_id.isin(tcga_tpm_not_impactful_mut_cnv.index)) & (tcga_all_mut.gene_name == gene_of_interest)]
+    pog_not_impact_mut = pog_all_mut[(pog_all_mut.p_id.isin(pog_tpm_not_impactful_mut_cnv.index)) & (pog_all_mut.gene_name == gene_of_interest)]
 
 X_not_impact = pd.concat([X_not_impact_tcga, X_not_impact_pog], axis=0)
 
@@ -210,24 +225,23 @@ if X_not_impact.shape[0] != 0:
     not_impact_preds_specific_tumour_types = clf.predict(X_not_impact)
     not_impact_preds_specific_tumour_types_df = pd.DataFrame({'p_id':X_not_impact.index, 'pred':not_impact_preds_specific_tumour_types})
 
-    # add the mutation consequences of the above samples to the dataframe
-    tcga_not_impact_mut = tcga_all_mut[(tcga_all_mut.p_id.isin(tcga_tpm_not_impactful_mut.index)) & (tcga_all_mut.gene_name == gene_of_interest)]
-    pog_not_impact_mut = pog_all_mut[(pog_all_mut.p_id.isin(pog_tpm_not_impactful_mut.index)) & (pog_all_mut.gene_name == gene_of_interest)]
-
+    # breakdown consequences for TCGA samples when there are multiple
     tcga_not_impact_mut['consequence_ls'] = tcga_not_impact_mut.consequence.str.split('\&')
     tcga_not_impact_mut = tcga_not_impact_mut.explode('consequence_ls')
     tcga_not_impact_mut = tcga_not_impact_mut.drop(columns=['consequence'])
     tcga_not_impact_mut = tcga_not_impact_mut.rename(columns={"consequence_ls": "consequence"})
     
+    # breakdown consequences for POG samples when there are multiple
     pog_not_impact_mut['consequence_ls'] = pog_not_impact_mut.consequence.str.split('\+')
     pog_not_impact_mut = pog_not_impact_mut.explode('consequence_ls')
     pog_not_impact_mut = pog_not_impact_mut.drop(columns=['consequence'])
     pog_not_impact_mut = pog_not_impact_mut.rename(columns={"consequence_ls": "consequence"})
     pog_not_impact_mut = pog_not_impact_mut.drop(columns=['refseq_aa_change'])
     
-    # merge tcga_not_impact_mut and pog_not_impact_mut
+    # merge tcga_not_impact_mut and pog_not_impact_mut with separated consequences
     all_not_impact_mut = pd.concat([tcga_not_impact_mut, pog_not_impact_mut], axis=0)
 
+    # add the mutation consequences of the prediction dataframe
     not_impact_preds_w_conseq_df = not_impact_preds_specific_tumour_types_df.merge(all_not_impact_mut, how='inner', on='p_id')
 
     not_impact_preds_w_conseq_df.to_csv(snakemake.output.pred_on_sample_w_not_impact_mut_specific_tumour_types, sep='\t', index=False)

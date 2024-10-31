@@ -47,12 +47,23 @@ pog_t_type = pd.read_csv(snakemake.input.pog_t_type, delimiter = '\t', header=0)
 tcga_tpm_not_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 
+# read expression data of samples with non-impactful mutations made using both SNV and CNV data
+tcga_tpm_not_impactful_mut_cnv = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+pog_tpm_not_impactful_mut_cnv = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+
 # read expression data of samples with impactful mutations or wild-type copies
 tcga_tpm_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_impactful_mut, delimiter = '\t', header=0, index_col=0)
 tcga_tpm_wt = pd.read_csv(snakemake.input.tcga_tpm_wt, delimiter = '\t', header=0, index_col=0)
 
 pog_tpm_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_impactful_mut, delimiter = '\t', header=0, index_col=0)
 pog_tpm_wt = pd.read_csv(snakemake.input.pog_tpm_wt, delimiter = '\t', header=0, index_col=0)
+
+# read expression data of samples with impactful mutations or wild-type copies
+tcga_tpm_impactful_mut_cnv = pd.read_csv(snakemake.input.tcga_tpm_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+tcga_tpm_wt_cnv = pd.read_csv(snakemake.input.tcga_tpm_wt_cnv, delimiter = '\t', header=0, index_col=0)
+
+pog_tpm_impactful_mut_cnv = pd.read_csv(snakemake.input.pog_tpm_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+pog_tpm_wt_cnv = pd.read_csv(snakemake.input.pog_tpm_wt_cnv, delimiter = '\t', header=0, index_col=0)
 
 # read processed mutation data
 tcga_all_mut = pd.read_csv(snakemake.input.tcga_mut_prcssd, delimiter = '\t', header=0)
@@ -128,14 +139,25 @@ for t in tumour_type_dict[gene_of_interest]:
     t_type_smpls = all_t_type[all_t_type.tumour_type_abbv==t].p_id
     
     # obtain samples with impactful mutations
-    tcga_mut_smpls = tcga_tpm_impactful_mut[tcga_tpm_impactful_mut.index.isin(t_type_smpls)].index
-    pog_mut_smpls = pog_tpm_impactful_mut[pog_tpm_impactful_mut.index.isin(t_type_smpls)].index
-    mut_smpls = pd.concat([pd.Series(tcga_mut_smpls), pd.Series(pog_mut_smpls)])
+    if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
+        tcga_mut_smpls = tcga_tpm_impactful_mut[tcga_tpm_impactful_mut.index.isin(t_type_smpls)].index
+        pog_mut_smpls = pog_tpm_impactful_mut[pog_tpm_impactful_mut.index.isin(t_type_smpls)].index
+        mut_smpls = pd.concat([pd.Series(tcga_mut_smpls), pd.Series(pog_mut_smpls)])
 
-    # obtain samples with wild-type copies
-    tcga_wt_smpls = tcga_tpm_wt[tcga_tpm_wt.index.isin(t_type_smpls)].index
-    pog_wt_smpls = pog_tpm_wt[pog_tpm_wt.index.isin(t_type_smpls)].index
-    wt_smpls = pd.concat([pd.Series(tcga_wt_smpls), pd.Series(pog_wt_smpls)])
+        # obtain samples with wild-type copies
+        tcga_wt_smpls = tcga_tpm_wt[tcga_tpm_wt.index.isin(t_type_smpls)].index
+        pog_wt_smpls = pog_tpm_wt[pog_tpm_wt.index.isin(t_type_smpls)].index
+        wt_smpls = pd.concat([pd.Series(tcga_wt_smpls), pd.Series(pog_wt_smpls)])
+        
+    elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+        tcga_mut_smpls = tcga_tpm_impactful_mut_cnv[tcga_tpm_impactful_mut_cnv.index.isin(t_type_smpls)].index
+        pog_mut_smpls = pog_tpm_impactful_mut_cnv[pog_tpm_impactful_mut_cnv.index.isin(t_type_smpls)].index
+        mut_smpls = pd.concat([pd.Series(tcga_mut_smpls), pd.Series(pog_mut_smpls)])
+
+        # obtain samples with wild-type copies
+        tcga_wt_smpls = tcga_tpm_wt_cnv[tcga_tpm_wt_cnv.index.isin(t_type_smpls)].index
+        pog_wt_smpls = pog_tpm_wt_cnv[pog_tpm_wt_cnv.index.isin(t_type_smpls)].index
+        wt_smpls = pd.concat([pd.Series(tcga_wt_smpls), pd.Series(pog_wt_smpls)])
     
     # down-sample the wild-type category
     if len(mut_smpls) < len(wt_smpls):
@@ -202,8 +224,24 @@ print('')
 # extract sample ids that exist in tumour types with significant f1-score
 req_p_ids = all_t_type[all_t_type.tumour_type_abbv.isin(tumour_type_dict[gene_of_interest])].p_id
 
-X_not_impact_tcga = tcga_tpm_not_impactful_mut.loc[tcga_tpm_not_impactful_mut.index.isin(req_p_ids)==True,]
-X_not_impact_pog = pog_tpm_not_impactful_mut.loc[pog_tpm_not_impactful_mut.index.isin(req_p_ids)==True,]
+if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
+    # extract samples harboring not-impactful mutations that belong to tumour types of interest
+    X_not_impact_tcga = tcga_tpm_not_impactful_mut.loc[tcga_tpm_not_impactful_mut.index.isin(req_p_ids)==True,]
+    X_not_impact_pog = pog_tpm_not_impactful_mut.loc[pog_tpm_not_impactful_mut.index.isin(req_p_ids)==True,]
+    
+    # find mutation types of samples harboring not-impactful mutations that belong to tumour types of interest
+    tcga_not_impact_mut = tcga_all_mut[(tcga_all_mut.p_id.isin(tcga_tpm_not_impactful_mut.index)) & (tcga_all_mut.gene_name == gene_of_interest)]
+    pog_not_impact_mut = pog_all_mut[(pog_all_mut.p_id.isin(pog_tpm_not_impactful_mut.index)) & (pog_all_mut.gene_name == gene_of_interest)]
+    
+elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+    # extract samples harboring not-impactful mutations that belong to tumour types of interest
+    X_not_impact_tcga = tcga_tpm_not_impactful_mut_cnv.loc[tcga_tpm_not_impactful_mut_cnv.index.isin(req_p_ids)==True,]
+    X_not_impact_pog = pog_tpm_not_impactful_mut_cnv.loc[pog_tpm_not_impactful_mut_cnv.index.isin(req_p_ids)==True,]
+    
+    # find mutation types of samples harboring not-impactful mutations that belong to tumour types of interest
+    tcga_not_impact_mut = tcga_all_mut[(tcga_all_mut.p_id.isin(tcga_tpm_not_impactful_mut_cnv.index)) & (tcga_all_mut.gene_name == gene_of_interest)]
+    pog_not_impact_mut = pog_all_mut[(pog_all_mut.p_id.isin(pog_tpm_not_impactful_mut_cnv.index)) & (pog_all_mut.gene_name == gene_of_interest)]
+
 X_not_impact = pd.concat([X_not_impact_tcga, X_not_impact_pog], axis=0)
 
 if X_not_impact.shape[0] != 0:
@@ -211,15 +249,13 @@ if X_not_impact.shape[0] != 0:
 
     not_impact_preds_specific_tumour_types_df = pd.DataFrame({'p_id':X_not_impact.index, 'pred':not_impact_preds_specific_tumour_types})
 
-    # add the mutation consequences of the above samples to the dataframe
-    tcga_not_impact_mut = tcga_all_mut[(tcga_all_mut.p_id.isin(tcga_tpm_not_impactful_mut.index)) & (tcga_all_mut.gene_name == gene_of_interest)]
-    pog_not_impact_mut = pog_all_mut[(pog_all_mut.p_id.isin(pog_tpm_not_impactful_mut.index)) & (pog_all_mut.gene_name == gene_of_interest)]
-
+    # breakdown consequences for TCGA samples when there are multiple
     tcga_not_impact_mut['consequence_ls'] = tcga_not_impact_mut.consequence.str.split('\&')
     tcga_not_impact_mut = tcga_not_impact_mut.explode('consequence_ls')
     tcga_not_impact_mut = tcga_not_impact_mut.drop(columns=['consequence'])
     tcga_not_impact_mut = tcga_not_impact_mut.rename(columns={"consequence_ls": "consequence"})
     
+    # breakdown consequences for POG samples when there are multiple
     pog_not_impact_mut['consequence_ls'] = pog_not_impact_mut.consequence.str.split('\+')
     pog_not_impact_mut = pog_not_impact_mut.explode('consequence_ls')
     pog_not_impact_mut = pog_not_impact_mut.drop(columns=['consequence'])
@@ -229,6 +265,7 @@ if X_not_impact.shape[0] != 0:
     # merge tcga_not_impact_mut and pog_not_impact_mut
     all_not_impact_mut = pd.concat([tcga_not_impact_mut, pog_not_impact_mut], axis=0)
 
+    # add the mutation consequences of the prediction dataframe
     not_impact_preds_w_conseq_df = not_impact_preds_specific_tumour_types_df.merge(all_not_impact_mut, how='inner', on='p_id')
 
     not_impact_preds_w_conseq_df.to_csv(snakemake.output.pred_on_sample_w_not_impact_mut_specific_tumour_types_balanced, sep='\t', index=False)

@@ -48,6 +48,13 @@ tcga_tpm_wt = pd.read_csv(snakemake.input.tcga_tpm_wt, delimiter = '\t', header=
 pog_tpm_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_impactful_mut, delimiter = '\t', header=0, index_col=0)
 pog_tpm_wt = pd.read_csv(snakemake.input.pog_tpm_wt, delimiter = '\t', header=0, index_col=0)
 
+# read expression files made with both SNVs/INDELs and CNVs
+tcga_tpm_impactful_mut_cnv = pd.read_csv(snakemake.input.tcga_tpm_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+tcga_tpm_wt_cnv = pd.read_csv(snakemake.input.tcga_tpm_wt_cnv, delimiter = '\t', header=0, index_col=0)
+
+pog_tpm_impactful_mut_cnv = pd.read_csv(snakemake.input.pog_tpm_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+pog_tpm_wt_cnv = pd.read_csv(snakemake.input.pog_tpm_wt_cnv, delimiter = '\t', header=0, index_col=0)
+
 #######################################################################################
 ######### Training RF with all samples containing impactful mutations or ##############
 ######### wilt-type copies from all tumour types separately ###########################
@@ -109,103 +116,113 @@ for t in t_types:
     spcfc_p_ids = all_t_type[all_t_type.tumour_type_abbv==t].p_id
     
     # find the number of samples with mutations 
-    n_mut_tcga = tcga_tpm_impactful_mut[tcga_tpm_impactful_mut.index.isin(spcfc_p_ids)].shape[0]
-    n_mut_pog = pog_tpm_impactful_mut[pog_tpm_impactful_mut.index.isin(spcfc_p_ids)].shape[0]
-    n_mut = n_mut_tcga + n_mut_pog
+    if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
+        n_mut_tcga = tcga_tpm_impactful_mut[tcga_tpm_impactful_mut.index.isin(spcfc_p_ids)].shape[0]
+        n_mut_pog = pog_tpm_impactful_mut[pog_tpm_impactful_mut.index.isin(spcfc_p_ids)].shape[0]
+        n_mut = n_mut_tcga + n_mut_pog
     
-    # run the analysis if there is at least 10 samples with mutations in the gene of interest
-    if n_mut >= 10:
-        # filter X and y based on extracted ids
-        if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
+        # run the analysis if there is at least 10 samples with mutations in the gene of interest
+        if n_mut >= 10:
+            # filter X and y based on extracted ids
             X_new = X.loc[(X.index.isin(spcfc_p_ids)==True),]
             y_new = y.loc[(y.index.isin(spcfc_p_ids)==True),]
-        elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+
+    elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+        n_mut_tcga = tcga_tpm_impactful_mut_cnv[tcga_tpm_impactful_mut_cnv.index.isin(spcfc_p_ids)].shape[0]
+        n_mut_pog = pog_tpm_impactful_mut_cnv[pog_tpm_impactful_mut_cnv.index.isin(spcfc_p_ids)].shape[0]
+        n_mut = n_mut_tcga + n_mut_pog
+        
+        # run the analysis if there is at least 10 samples with mutations in the gene of interest
+        if n_mut >= 10:
+            # filter X and y based on extracted ids
             X_new = X_cnv.loc[(X_cnv.index.isin(spcfc_p_ids)==True),]
             y_new = y_cnv.loc[(y_cnv.index.isin(spcfc_p_ids)==True),]
         
-        # convert label dataframe to vector to train RF    
-        y_new_rf = y_new.y
+    # convert label dataframe to vector to train RF    
+    y_new_rf = y_new.y
         
-        # run 5-fold CV on the samples from each tumour type
-        all_pred_df, all_prob, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X_new, y_new_rf)
+    # run 5-fold CV on the samples from each tumour type
+    all_pred_df, all_prob, true_label_prob = tph.test_performance_5_fold_CV(clf, skf, X_new, y_new_rf)
         
-        # assess performance
-        #f_1 = open(snakemake.output.t_type_results, 'w')
-        #f_1 = open("t_type_results_"+str(t)+".txt", 'w')
-        f_1 = open(snakemake.output[0].split('.txt')[0]+"_"+str(t)+".txt", 'w')
+    # assess performance
+    f_1 = open(snakemake.output[0].split('.txt')[0]+"_"+str(t)+".txt", 'w')
 
-        print(confusion_matrix(all_pred_df.status, all_pred_df.predict, labels=['mut','wt']), file=f_1)
-        print(classification_report(all_pred_df.status, all_pred_df.predict), file=f_1)
+    print(confusion_matrix(all_pred_df.status, all_pred_df.predict, labels=['mut','wt']), file=f_1)
+    print(classification_report(all_pred_df.status, all_pred_df.predict), file=f_1)
 
-        f_1.close()
+    f_1.close()
         
-        # extract the genes contributing the most to classification in each tumour type
-        # train on all samples
-        clf.fit(X_new, y_new_rf)
+    # extract the genes contributing the most to classification in each tumour type
+    # train on all samples
+    clf.fit(X_new, y_new_rf)
 
-        # important features in classification
-        rand_f_scores = clf.feature_importances_
-        indices = np.argsort(rand_f_scores)
-        rand_f_scores_sorted = pd.Series(np.sort(rand_f_scores))
-        rand_forest_importance_scores_true_df = pd.DataFrame({'gene':pd.Series(X_new.columns[indices]), 'importance_score':rand_f_scores_sorted})
-        rand_forest_importance_scores_true_df = rand_forest_importance_scores_true_df.sort_values(by='importance_score', ascending=False)
-        rand_forest_importance_scores_true_df.to_csv(snakemake.output[1].split('.txt')[0]+"_"+str(t)+".txt", sep='\t', index=False)
+    # important features in classification
+    rand_f_scores = clf.feature_importances_
+    indices = np.argsort(rand_f_scores)
+    rand_f_scores_sorted = pd.Series(np.sort(rand_f_scores))
+    rand_forest_importance_scores_true_df = pd.DataFrame({'gene':pd.Series(X_new.columns[indices]), 'importance_score':rand_f_scores_sorted})
+    rand_forest_importance_scores_true_df = rand_forest_importance_scores_true_df.sort_values(by='importance_score', ascending=False)
+    rand_forest_importance_scores_true_df.to_csv(snakemake.output[1].split('.txt')[0]+"_"+str(t)+".txt", sep='\t', index=False)
         
-        ##########################################################
-        ### Test the performance on balanced sets of tumour types
-        # find the number of samples containing wild-type copies
+    ##########################################################
+    ### Test the performance on balanced sets of tumour types
+    # find the number of samples containing wild-type copies
+    if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
         n_wt_tcga = tcga_tpm_wt[tcga_tpm_wt.index.isin(spcfc_p_ids)].shape[0]
         n_wt_pog = pog_tpm_wt[pog_tpm_wt.index.isin(spcfc_p_ids)].shape[0]
         n_wt = n_wt_tcga + n_wt_pog
+    elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+        n_wt_tcga = tcga_tpm_wt_cnv[tcga_tpm_wt_cnv.index.isin(spcfc_p_ids)].shape[0]
+        n_wt_pog = pog_tpm_wt_cnv[pog_tpm_wt_cnv.index.isin(spcfc_p_ids)].shape[0]
+        n_wt = n_wt_tcga + n_wt_pog
         
-        # run the analysis if there is at least 10 samples in each category (mutant and wild-type)
-        if n_wt >= 10:
-            all_wt_samples = pd.Series(y_new.loc[(y_new.index.isin(spcfc_p_ids)) & (y_new.y=='wt'),].index)
-            all_mut_samples = pd.Series(y_new.loc[(y_new.index.isin(spcfc_p_ids)) & (y_new.y=='mut'),].index)
+    # run the analysis if there is at least 10 samples in each category (mutant and wild-type)
+    if n_wt >= 10 and n_mut >=10:
+        all_wt_samples = pd.Series(y_new.loc[(y_new.index.isin(spcfc_p_ids)) & (y_new.y=='wt'),].index)
+        all_mut_samples = pd.Series(y_new.loc[(y_new.index.isin(spcfc_p_ids)) & (y_new.y=='mut'),].index)
             
-            # down-sample the category with higher number of samples
-            if n_wt > n_mut:
-                wt_samples_to_keep = all_wt_samples.sample(n=n_mut)
-                samples_to_keep = pd.concat([all_mut_samples, wt_samples_to_keep])
-            else:
-                mut_samples_to_keep = all_mut_samples.sample(n=n_wt)
-                samples_to_keep = pd.concat([all_wt_samples, mut_samples_to_keep])
+        # down-sample the category with higher number of samples
+        if n_wt > n_mut:
+            wt_samples_to_keep = all_wt_samples.sample(n=n_mut)
+            samples_to_keep = pd.concat([all_mut_samples, wt_samples_to_keep])
+        else:
+            mut_samples_to_keep = all_mut_samples.sample(n=n_wt)
+            samples_to_keep = pd.concat([all_wt_samples, mut_samples_to_keep])
             
-            # filter data based on selected samples
-            if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
-                X_new2 = X[X.index.isin(samples_to_keep)]
-            elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
-                X_new2 = X_cnv[X_cnv.index.isin(samples_to_keep)]
+        # filter data based on selected samples
+        if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
+            X_new2 = X[X.index.isin(samples_to_keep)]
+        elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+            X_new2 = X_cnv[X_cnv.index.isin(samples_to_keep)]
             
-            X_new2 = X_new2.sort_index()
+        X_new2 = X_new2.sort_index()
             
-            y_new2 = y_new[y_new.index.isin(samples_to_keep)]
-            y_new2 = y_new2.sort_values(by=['p_id'])
-            y_new2 = y_new2.y
+        y_new2 = y_new[y_new.index.isin(samples_to_keep)]
+        y_new2 = y_new2.sort_values(by=['p_id'])
+        y_new2 = y_new2.y
             
-            # random forest performance on tcga and pog
-            all_pred_df2, all_prob2, true_label_prob2 = tph.test_performance_5_fold_CV(clf, skf, X_new2, y_new2)
+        # random forest performance on tcga and pog
+        all_pred_df2, all_prob2, true_label_prob2 = tph.test_performance_5_fold_CV(clf, skf, X_new2, y_new2)
         
-            # assess performance
-            #f_2 = open(snakemake.output.t_type_results_balanced, 'w')
-            f_2 = open(snakemake.output[2].split('.txt')[0]+"_"+str(t)+".txt", 'w')
+        # assess performance
+        f_2 = open(snakemake.output[2].split('.txt')[0]+"_"+str(t)+".txt", 'w')
             
-            print(confusion_matrix(all_pred_df2.status, all_pred_df2.predict, labels=['mut','wt']), file=f_2)
-            print(classification_report(all_pred_df2.status, all_pred_df2.predict), file=f_2)
+        print(confusion_matrix(all_pred_df2.status, all_pred_df2.predict, labels=['mut','wt']), file=f_2)
+        print(classification_report(all_pred_df2.status, all_pred_df2.predict), file=f_2)
             
-            f_2.close()
+        f_2.close()
             
-            # extract the genes contributing the most to classification in balanced set of each tumour type
-            # train on all samples
-            clf.fit(X_new2, y_new2)
+        # extract the genes contributing the most to classification in balanced set of each tumour type
+        # train on all samples
+        clf.fit(X_new2, y_new2)
 
-            # important features in classification
-            rand_f_scores2 = clf.feature_importances_
-            indices2 = np.argsort(rand_f_scores2)
-            rand_f_scores_sorted2 = pd.Series(np.sort(rand_f_scores2))
-            rand_forest_importance_scores_true_df2 = pd.DataFrame({'gene':pd.Series(X_new2.columns[indices2]), 'importance_score':rand_f_scores_sorted2})
-            rand_forest_importance_scores_true_df2 = rand_forest_importance_scores_true_df2.sort_values(by='importance_score', ascending=False)
-            rand_forest_importance_scores_true_df2.to_csv(snakemake.output[3].split('.txt')[0]+"_"+str(t)+".txt", sep='\t', index=False)
+        # important features in classification
+        rand_f_scores2 = clf.feature_importances_
+        indices2 = np.argsort(rand_f_scores2)
+        rand_f_scores_sorted2 = pd.Series(np.sort(rand_f_scores2))
+        rand_forest_importance_scores_true_df2 = pd.DataFrame({'gene':pd.Series(X_new2.columns[indices2]), 'importance_score':rand_f_scores_sorted2})
+        rand_forest_importance_scores_true_df2 = rand_forest_importance_scores_true_df2.sort_values(by='importance_score', ascending=False)
+        rand_forest_importance_scores_true_df2.to_csv(snakemake.output[3].split('.txt')[0]+"_"+str(t)+".txt", sep='\t', index=False)
 
 print('Classification is performed on both balanced and imbalanced sets of each tumour type.')
 print('')

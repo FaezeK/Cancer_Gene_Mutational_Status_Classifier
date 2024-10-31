@@ -48,6 +48,13 @@ tcga_tpm_wt = pd.read_csv(snakemake.input.tcga_tpm_wt, delimiter = '\t', header=
 pog_tpm_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_impactful_mut, delimiter = '\t', header=0, index_col=0)
 pog_tpm_wt = pd.read_csv(snakemake.input.pog_tpm_wt, delimiter = '\t', header=0, index_col=0)
 
+# read expression files made using both SNV and CNV data
+tcga_tpm_impactful_mut_cnv = pd.read_csv(snakemake.input.tcga_tpm_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+tcga_tpm_wt_cnv = pd.read_csv(snakemake.input.tcga_tpm_wt_cnv, delimiter = '\t', header=0, index_col=0)
+
+pog_tpm_impactful_mut_cnv = pd.read_csv(snakemake.input.pog_tpm_impactful_mut_cnv, delimiter = '\t', header=0, index_col=0)
+pog_tpm_wt_cnv = pd.read_csv(snakemake.input.pog_tpm_wt_cnv, delimiter = '\t', header=0, index_col=0)
+
 ################################################################################################################
 ######### Training RF with samples containing impactful mutations or wilt-type copies from tumour types ########
 ######### that had a significant f1-score when balanced set of samples were used for training/testing. #########
@@ -118,14 +125,25 @@ for t in tumour_type_dict[gene_of_interest]:
     t_type_smpls = all_t_type[all_t_type.tumour_type_abbv==t].p_id
     
     # obtain the number of samples with impactful mutations
-    tcga_mut_smpls = tcga_tpm_impactful_mut[tcga_tpm_impactful_mut.index.isin(t_type_smpls)].index
-    pog_mut_smpls = pog_tpm_impactful_mut[pog_tpm_impactful_mut.index.isin(t_type_smpls)].index
-    mut_smpls = pd.concat([pd.Series(tcga_mut_smpls), pd.Series(pog_mut_smpls)])
+    if best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_only':
+        tcga_mut_smpls = tcga_tpm_impactful_mut[tcga_tpm_impactful_mut.index.isin(t_type_smpls)].index
+        pog_mut_smpls = pog_tpm_impactful_mut[pog_tpm_impactful_mut.index.isin(t_type_smpls)].index
+        mut_smpls = pd.concat([pd.Series(tcga_mut_smpls), pd.Series(pog_mut_smpls)])
 
-    # obtain the number of samples with wild-type copies
-    tcga_wt_smpls = tcga_tpm_wt[tcga_tpm_wt.index.isin(t_type_smpls)].index
-    pog_wt_smpls = pog_tpm_wt[pog_tpm_wt.index.isin(t_type_smpls)].index
-    wt_smpls = pd.concat([pd.Series(tcga_wt_smpls), pd.Series(pog_wt_smpls)])
+        # obtain the number of samples with wild-type copies
+        tcga_wt_smpls = tcga_tpm_wt[tcga_tpm_wt.index.isin(t_type_smpls)].index
+        pog_wt_smpls = pog_tpm_wt[pog_tpm_wt.index.isin(t_type_smpls)].index
+        wt_smpls = pd.concat([pd.Series(tcga_wt_smpls), pd.Series(pog_wt_smpls)])
+        
+    elif best_setting[best_setting.gene==gene_of_interest].best_setting.iloc[0] == 'SNV_CNV':
+        tcga_mut_smpls = tcga_tpm_impactful_mut_cnv[tcga_tpm_impactful_mut_cnv.index.isin(t_type_smpls)].index
+        pog_mut_smpls = pog_tpm_impactful_mut_cnv[pog_tpm_impactful_mut_cnv.index.isin(t_type_smpls)].index
+        mut_smpls = pd.concat([pd.Series(tcga_mut_smpls), pd.Series(pog_mut_smpls)])
+
+        # obtain the number of samples with wild-type copies
+        tcga_wt_smpls = tcga_tpm_wt_cnv[tcga_tpm_wt_cnv.index.isin(t_type_smpls)].index
+        pog_wt_smpls = pog_tpm_wt_cnv[pog_tpm_wt_cnv.index.isin(t_type_smpls)].index
+        wt_smpls = pd.concat([pd.Series(tcga_wt_smpls), pd.Series(pog_wt_smpls)])
     
     # down-sample wild-type category
     if len(mut_smpls) < len(wt_smpls):
