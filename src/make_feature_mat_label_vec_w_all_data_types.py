@@ -20,13 +20,13 @@ print('Reading input files ...')
 print('')
 
 # read expression files
-tcga_tpm_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_impactful_mut, delimiter = '\t', header=0)
-tcga_tpm_wt = pd.read_csv(snakemake.input.tcga_tpm_wt, delimiter = '\t', header=0)
-tcga_tpm_not_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut, delimiter = '\t', header=0)
+tcga_tpm_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_impactful_mut, delimiter = '\t', header=0, index_col=0)
+tcga_tpm_wt = pd.read_csv(snakemake.input.tcga_tpm_wt, delimiter = '\t', header=0, index_col=0)
+tcga_tpm_not_impactful_mut = pd.read_csv(snakemake.input.tcga_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 
-pog_tpm_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_impactful_mut, delimiter = '\t', header=0)
-pog_tpm_wt = pd.read_csv(snakemake.input.pog_tpm_wt, delimiter = '\t', header=0)
-pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut, delimiter = '\t', header=0)
+pog_tpm_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_impactful_mut, delimiter = '\t', header=0, index_col=0)
+pog_tpm_wt = pd.read_csv(snakemake.input.pog_tpm_wt, delimiter = '\t', header=0, index_col=0)
+pog_tpm_not_impactful_mut = pd.read_csv(snakemake.input.pog_tpm_not_impactful_mut, delimiter = '\t', header=0, index_col=0)
 
 # read copy number data
 tcga_cnv_prcssd = pd.read_csv(snakemake.input.tcga_cnv_prcssd, delimiter = '\t', header=0, index_col=0)
@@ -89,7 +89,6 @@ pog_tpm_impactful_mut_w_cnv, pog_tpm_wt_w_cnv, pog_tpm_not_impactful_mut_w_cnv =
 
 # expression matrix and target label for TCGA and POG samples based on SNV and CNV data
 X_cnv, y_cnv = make_X_y_merged(tcga_tpm_impactful_mut_w_cnv, pog_tpm_impactful_mut_w_cnv, tcga_tpm_wt_w_cnv, pog_tpm_wt_w_cnv, 'mut', 'wt')
-X_cnv = X_cnv.set_index('Unnamed: 0')
 
 # make a dataframe for label vector
 y_cnv_df = pd.DataFrame({'p_id':X_cnv.index, 'y':y_cnv})
@@ -104,7 +103,6 @@ pog_tpm_impactful_mut_w_sv, pog_tpm_wt_w_sv, pog_tpm_not_impactful_mut_w_sv = mo
 
 # expression matrix and target label for TCGA and POG samples based on SNV and SV data
 X_sv, y_sv = make_X_y_merged(tcga_tpm_impactful_mut_w_sv, pog_tpm_impactful_mut_w_sv, tcga_tpm_wt_w_sv, pog_tpm_wt_w_sv, 'mut', 'wt')
-X_sv = X_sv.set_index('Unnamed: 0')
 
 # make a dataframe for label vector
 y_sv_df = pd.DataFrame({'p_id':X_sv.index, 'y':y_sv})
@@ -119,7 +117,6 @@ pog_tpm_impactful_mut_all_data, pog_tpm_wt_all_data, pog_tpm_not_impactful_mut_a
 
 # expression matrix and target label for TCGA and POG samples based on SNV and SV data
 X, y = make_X_y_merged(tcga_tpm_impactful_mut_all_data, pog_tpm_impactful_mut_all_data, tcga_tpm_wt_all_data, pog_tpm_wt_all_data, 'mut', 'wt')
-X = X.set_index('Unnamed: 0')
 
 # make a dataframe for label vector
 y_df = pd.DataFrame({'p_id':X.index, 'y':y})
