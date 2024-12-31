@@ -165,7 +165,8 @@ val_cnts_df = val_cnts_df.reset_index(drop=True)
 p_val_col = []
 
 for i in np.arange(0,val_cnts_df.shape[0],2):
-    p_val = stats.binom_test(val_cnts_df.val[i], n=val_cnts_df.val[i]+val_cnts_df.val[i+1])
+    res = stats.binomtest(val_cnts_df.val[i], n=val_cnts_df.val[i]+val_cnts_df.val[i+1])
+    p_val = res.pvalue
     if np.round(p_val, 2) == 0:
         p_val = np.round(p_val, 6)
     else:
