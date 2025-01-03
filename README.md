@@ -14,4 +14,4 @@ The processed expression and all gene variation data files from 608 patients wit
 ## Workflow
 
 The workflow is visualized below: \
-<img src="dag.png" width="800" height="500">
+<img src="dag.png" width="900" height="450">
