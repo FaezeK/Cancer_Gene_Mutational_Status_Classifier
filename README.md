@@ -10,3 +10,8 @@ Hg38 MAF files containing SNV/INDEL data were downloaded from: https://portal.gd
 Structural variation files for all TCGA tumour types were downloaded from https://www.cbioportal.org/ on Oct 4, 2023.<br/>
 **POG (Personalized OncoGenomics):**<br/>
 The processed expression and all gene variation data files from 608 patients with metastatic disease who were recruited before any chemotherapy or after one line of chemotherapy were downloaded from the Canada’s Michael Smith Genome Sciences Centre servers.
+
+## Workflow
+
+The workflow is visualized below: \
+<img src="dag.png" width="400" height="250">
