@@ -25,6 +25,7 @@ rule all:
         'results/'+str(gene_of_interest)+'/permut_balanced_results_all_tumours.txt',
         'results/'+str(gene_of_interest)+'/permut_balanced_results_selected_tumours.txt',
         'results/'+str(gene_of_interest)+'/balanced_t_types_cv_results.txt'
+    shell: 'rm -rf tmp_data'
 
 
 rule preprocess_data:
