@@ -6,6 +6,8 @@ This repository provides code for classifying tumour sample expression data base
 
 This project evaluated the performance of random forest models both across all tumour types and individual tumour types. Based on the performance of the model, tailored downstream strategies were applied to different genes, resulting in varying selection of tumour types included in the downstream analysis.
 
+**Note:** The provided Snakefile runs all the scripts for all the genes. If only some of the scripts are needed, the rest of Snakefile rules should be commented out. Please note that the hyperparameter tuning script can take a very long time to run (up to 3 weeks for some genes). 
+
 ## Input Data
 
 **TCGA (The Cancer Genome Atlas):**<br/>
