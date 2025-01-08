@@ -1,4 +1,10 @@
-gene_of_interest = 'AR'
+genes_list = ['APC','AR','ARID1A','ASXL1','ATM','ATR','ATRX','BRAF','BRCA1','BRCA2','CDH1','CDK12','CDKN2A','CTCF',
+              'CTNNB1','EGFR','EP300','ERBB4','EZH2','FBXW7','FLT3','GATA3','KDM6A','KEAP1','KIT','KRAS','MAP3K1',
+              'MECOM','MTOR','NCOR1','NF1','NFE2L2','NOTCH1','NRAS','NSD1','PBRM1','PDGFRA','PIK3CA','PIK3R1',
+              'POLQ','PTEN','RB1','SETBP1','SETD2','SF3B1','SMAD4','SPOP','STAG2','TET2','TP53']
+
+for g in genes_list:
+    gene_of_interest = g
 
 def fetch_tumour_types():
     # Get output of classify_by_tumour_types rule
