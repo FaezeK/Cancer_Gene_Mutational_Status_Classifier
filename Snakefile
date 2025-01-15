@@ -36,18 +36,18 @@ rule all:
 
 rule preprocess_data:
     input:
-        pog_tpm = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_tpm.tsv',
-        pog_snv = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/new_download/pog_snps_indels_short.tsv',
-        pog_germline = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/germline_mut/POG500.germline_variants.final.xlsx',
-        pog_cnv = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/cnv/all_CN.tsv',
-        pog_sv = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/pog_sv.tsv',
+        pog_tpm = '/data/pog/hg38/pog_tpm.tsv',
+        pog_snv = '/data/pog/hg38/new_download/pog_snps_indels_short.tsv',
+        pog_germline = '/data/pog/germline_mut/POG500.germline_variants.final.xlsx',
+        pog_cnv = '/data/pog/hg38/cnv/all_CN.tsv',
+        pog_sv = '/data/pog/pog_sv.tsv',
 
-        tcga_tpm = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/hg38/tcga_rsem_gene_tpm.txt',
-        tcga_snv = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/hg38/tcga_gdc_hg38_mut_fltr.txt',
-        tcga_germline = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/germline_mut/PCA_pathVar_integrated_filtered_adjusted.tsv',
-        tcga_cnv = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/cnv/TCGA.PANCAN.sampleMap_Gistic2_CopyNumber_Gistic2_all_thresholded.by_genes',
-        tcga_sv = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/sv/all_sv.txt',
-        all_genes = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/all_genes.txt'
+        tcga_tpm = '/data/tcga/hg38/tcga_rsem_gene_tpm.txt',
+        tcga_snv = '/data/tcga/hg38/tcga_gdc_hg38_mut_fltr.txt',
+        tcga_germline = '/data/tcga/germline_mut/PCA_pathVar_integrated_filtered_adjusted.tsv',
+        tcga_cnv = '/data/tcga/cnv/TCGA.PANCAN.sampleMap_Gistic2_CopyNumber_Gistic2_all_thresholded.by_genes',
+        tcga_sv = '/data/tcga/sv/all_sv.txt',
+        all_genes = '/data/all_genes.txt'
     output:
         pog_tpm_prcssd = 'tmp_data/pog_tpm_prcssd.tsv',
         pog_mut_prcssd = 'tmp_data/pog_mut_prcssd.tsv',
@@ -98,7 +98,7 @@ rule test_performance_SNVs_only:
         feature_matrix = 'tmp_data/feature_matrix.txt',
         label_vector = 'tmp_data/label_vector.txt',
         best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
-        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv'
+        tcga_t_type = '/data/tcga/tcga_t_type.tsv'
     output:
         classification_results_SNVs_only = 'results/'+str(gene_of_interest)+'/classification_results_SNVs_only.txt',
         auroc_auprc_SNVs_only = 'results/'+str(gene_of_interest)+'/auroc_auprc_SNVs_only.jpg',
@@ -163,7 +163,7 @@ rule analyze_performance_in_chosen_setting:
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
         best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
-        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
+        best_setting = '/data/best_classification_setting.tsv',
         tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
         tcga_tpm_not_impactful_mut_cnv = 'tmp_data/tcga_tpm_not_impactful_mut_cnv.txt',
@@ -188,7 +188,7 @@ rule find_threshold_for_important_genes:
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
         best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
-        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv'
+        best_setting = '/data/best_classification_setting.tsv'
     output:
         num_important_genes = 'results/'+str(gene_of_interest)+'/num_important_genes.txt',
         true_vs_shuffled_importance_scores = 'results/'+str(gene_of_interest)+'/true_vs_shuffled_importance_scores.jpg',
@@ -206,9 +206,9 @@ checkpoint classify_samples_by_tumour_types:
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
         best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
-        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
-        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
-        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
+        best_setting = '/data/best_classification_setting.tsv',
+        tcga_t_type = '/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/data/pog/hg38/pog_t_type.tsv',
         tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
         tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
         pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
@@ -234,9 +234,9 @@ rule test_performance_on_tumour_types:
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
         best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
-        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
-        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
-        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
+        best_setting = '/data/best_classification_setting.tsv',
+        tcga_t_type = '/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/data/pog/hg38/pog_t_type.tsv',
         tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
         tcga_tpm_not_impactful_mut_cnv = 'tmp_data/tcga_tpm_not_impactful_mut_cnv.txt',
@@ -261,9 +261,9 @@ rule assess_performance_on_balanced_set_of_all_tumours:
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
         best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
-        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
-        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
-        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv'
+        best_setting = '/data/best_classification_setting.tsv',
+        tcga_t_type = '/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/data/pog/hg38/pog_t_type.tsv'
     output:
         permut_balanced_results_all_tumours = 'results/'+str(gene_of_interest)+'/permut_balanced_results_all_tumours.txt'
     params: gene_name = gene_of_interest
@@ -278,9 +278,9 @@ rule assess_performance_on_balanced_set_of_selected_tumours:
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
         best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
-        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
-        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
-        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
+        best_setting = '/data/best_classification_setting.tsv',
+        tcga_t_type = '/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/data/pog/hg38/pog_t_type.tsv',
         tcga_tpm_impactful_mut = 'tmp_data/tcga_tpm_impactful_mut.txt',
         tcga_tpm_wt = 'tmp_data/tcga_tpm_wt.txt',
         pog_tpm_impactful_mut = 'tmp_data/pog_tpm_impactful_mut.txt',
@@ -303,9 +303,9 @@ rule test_performance_on_balanced_tumour_types:
         feature_matrix_cnv = 'tmp_data/feature_matrix_cnv.txt',
         label_vector_cnv = 'tmp_data/label_vector_cnv.txt',
         best_hyper_param = 'results/'+str(gene_of_interest)+'/best_hyper_param.txt',
-        best_setting = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/best_classification_setting.tsv',
-        tcga_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/tcga/tcga_t_type.tsv',
-        pog_t_type = '/projects/fkeshavarz_prj/fkeshavarz_scratch/data/pog/hg38/pog_t_type.tsv',
+        best_setting = '/data/best_classification_setting.tsv',
+        tcga_t_type = '/data/tcga/tcga_t_type.tsv',
+        pog_t_type = '/data/pog/hg38/pog_t_type.tsv',
         tcga_tpm_not_impactful_mut = 'tmp_data/tcga_tpm_not_impactful_mut.txt',
         pog_tpm_not_impactful_mut = 'tmp_data/pog_tpm_not_impactful_mut.txt',
         tcga_tpm_not_impactful_mut_cnv = 'tmp_data/tcga_tpm_not_impactful_mut_cnv.txt',
